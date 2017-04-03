@@ -1,8 +1,8 @@
-prefix=/home/tsane/Documents/catkin_ws/install
+prefix=/home/tsane/Documents/ros-catkin-workspace/install
 
 Name: tsane_mmlamare_lab3
 Description: Description of tsane_mmlamare_lab3
 Version: 0.0.0
 Cflags: 
-Libs: -L/home/tsane/Documents/catkin_ws/install/lib 
+Libs: -L/home/tsane/Documents/ros-catkin-workspace/install/lib 
 Requires: 

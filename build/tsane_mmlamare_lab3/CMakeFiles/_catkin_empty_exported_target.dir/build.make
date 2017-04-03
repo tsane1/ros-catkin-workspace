@@ -35,10 +35,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/tsane/Documents/catkin_ws/src
+CMAKE_SOURCE_DIR = /home/tsane/Documents/ros-catkin-workspace/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/tsane/Documents/catkin_ws/build
+CMAKE_BINARY_DIR = /home/tsane/Documents/ros-catkin-workspace/build
 
 # Utility rule file for _catkin_empty_exported_target.
 
@@ -56,10 +56,10 @@ tsane_mmlamare_lab3/CMakeFiles/_catkin_empty_exported_target.dir/build: _catkin_
 .PHONY : tsane_mmlamare_lab3/CMakeFiles/_catkin_empty_exported_target.dir/build
 
 tsane_mmlamare_lab3/CMakeFiles/_catkin_empty_exported_target.dir/clean:
-	cd /home/tsane/Documents/catkin_ws/build/tsane_mmlamare_lab3 && $(CMAKE_COMMAND) -P CMakeFiles/_catkin_empty_exported_target.dir/cmake_clean.cmake
+	cd /home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_lab3 && $(CMAKE_COMMAND) -P CMakeFiles/_catkin_empty_exported_target.dir/cmake_clean.cmake
 .PHONY : tsane_mmlamare_lab3/CMakeFiles/_catkin_empty_exported_target.dir/clean
 
 tsane_mmlamare_lab3/CMakeFiles/_catkin_empty_exported_target.dir/depend:
-	cd /home/tsane/Documents/catkin_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/tsane/Documents/catkin_ws/src /home/tsane/Documents/catkin_ws/src/tsane_mmlamare_lab3 /home/tsane/Documents/catkin_ws/build /home/tsane/Documents/catkin_ws/build/tsane_mmlamare_lab3 /home/tsane/Documents/catkin_ws/build/tsane_mmlamare_lab3/CMakeFiles/_catkin_empty_exported_target.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/tsane/Documents/ros-catkin-workspace/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/tsane/Documents/ros-catkin-workspace/src /home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_lab3 /home/tsane/Documents/ros-catkin-workspace/build /home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_lab3 /home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_lab3/CMakeFiles/_catkin_empty_exported_target.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : tsane_mmlamare_lab3/CMakeFiles/_catkin_empty_exported_target.dir/depend
 
