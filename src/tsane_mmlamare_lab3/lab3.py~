@@ -8,9 +8,11 @@ Authors:
   - Matthew Lamare
 
 Since:
+	- 4/3/2017
 	- 3/30/2017
 
 Version:
+	- 1.1 Moved A* stuff into `astar.py`
 	- 1.0 Initial Commit
 """
 
@@ -20,23 +22,8 @@ from nav_msgs.msg import MapMetaData, OccupancyGrid
 from nav_msgs.msg import GridCells
 from geometry_msgs.msg import PoseStamped, Point
 from random import randint
-import heapq
 
-class Node:
-	def __init__(self, x, y):
-		self.x = x
-		self.y = y
-
-
-		self.g = 100
-		global goal
-		self.h = math.sqrt((self.x - goal.x) ** 2 + (self.y - goal.y) ** 2)
-
-	def update_g(self, parent):
-		self.g = parent.g + 1
-		
-		
-
+from astar import Node, a_star as astar
 """
 Callback function for subscription to the map
 
@@ -57,18 +44,18 @@ Parameters:
 """
 def map_callback(msg):
 	global theMap
+	global goal
+
 	theMap = [[0 for x in range(msg.info.width)] for y in range(msg.info.height)]
 
-	row = col = 0
+	row = col = -1
 	for i in range(len(msg.data)):
 		if i % msg.info.width == 0:
 			row += 1
 			col = 0
-		theMap[row][col] = Node(row, col)
+		theMap[row][col] = Node(row, col, goal)
+		col += 1
 		
-
-	
-
 """
 Callback function for subscription to the map
 
@@ -98,51 +85,11 @@ def goal_callback(msg):
 	global goal
 	goal = msg.pose
 
-"""
-An implementation of the A* path planning algorithm
-"""
-def a_star():
-	global theMap, start, goal
-	
-	closedSet = []
-	openSet = [
-		theMap[start.x][start.y]
-	]
-
-	while not openSet:
-		openSet = openSet.heapify()
-		current = openSet[0]
-	
-		if current == goal:
-			return "IT WORKED"
-			#return reconstruct_path(current, current.parent) #still need to write this
-		
-		openSet.remove(current)
-		closedSet.append(current)
-  
-		for n in getNeighbors(current):
-			if n in closedSet:
-				continue
-		
-			tentative_gCost = current.g + 1
-
-			if n not in openset:
-				openSet.append(n)
-	
-			elif tentative_gCost >= n.g:
-				continue
-
-			n.parent = current
-			n.g = tentative_gCost
-			f = n.g + n.h
-
-	return "A* Fucked Up"
-
 
 def makePoint():
 	#randomizer
-	randWidth = randint(0, 10)
-	randHeight = randint(0, 10)
+	randWidth = randint(0, 2)
+	randHeight = randint(0, 2)
 
 	#create a point
 	point = Point()
@@ -160,18 +107,30 @@ def coloring():
 	gridCells.header.frame_id = 'map'
 
 	#set size of points
-	gridCells.cell_width = 5
-	gridCells.cell_height = 5
+	gridCells.cell_width = 0.25
+	gridCells.cell_height = 0.25
 
 	#Makes a random number (0 to 100) in random locaions within the grid
 	for i in range(0,10):
 		gridCells.cells.append(makePoint())
-		
+	
 	global point_pub
 	point_pub.publish(gridCells)
+	print "done"
+	rospy.sleep(rospy.Duration(0.5))
 
 # Main
 if __name__ == '__main__':
+	global start
+	start = PoseStamped()
+	start.pose.position.x = 0
+	start.pose.position.y = 0
+
+	global goal
+	goal = PoseStamped()
+	goal.pose.position.x = 5
+	goal.pose.position.y = 5
+	
 	rospy.init_node('tsane_mmlamare_lab3')
 
 	# Publishers
@@ -189,9 +148,7 @@ if __name__ == '__main__':
 	print "Starting Lab 3"
 
 	while raw_input() != 'q': 
-		a_star()
-	#while not rospy.is_shutdown(): 
-	#	rospy.spin()
+		coloring()
 
 	print "Lab 3 Finished"
 	
