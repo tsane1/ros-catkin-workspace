@@ -1,0 +1,2 @@
+tsane_mmlamare_lab3
+-DCATKIN_DEVEL_PREFIX=/home/tsane/Documents/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/tsane/Documents/catkin_ws/install -G Unix Makefiles
