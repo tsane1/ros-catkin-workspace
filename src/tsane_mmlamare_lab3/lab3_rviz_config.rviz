@@ -7,8 +7,9 @@ Panels:
         - /Grid1
         - /RobotModel1/Status1
         - /Map1/Status1
-        - /GridCells1
-        - /GridCells1/Status1
+        - /Frontier1
+        - /Frontier1/Status1
+        - /Path1
       Splitter Ratio: 0.5
     Tree Height: 776
   - Class: rviz/Selection
@@ -233,36 +234,6 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: LaserScan
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.01
-      Style: Squares
-      Topic: /scan
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
     - Alpha: 0.7
       Class: rviz/Map
       Color Scheme: map
@@ -281,10 +252,17 @@ Visualization Manager:
       Value: true
     - Alpha: 1
       Class: rviz/GridCells
-      Color: 25; 255; 0
+      Color: 4; 255; 0
       Enabled: true
-      Name: GridCells
+      Name: Frontier
       Topic: /a_star/frontier
+      Value: true
+    - Alpha: 1
+      Class: rviz/GridCells
+      Color: 255; 5; 214
+      Enabled: true
+      Name: Path
+      Topic: /a_star/closed
       Value: true
   Enabled: true
   Global Options:
@@ -317,11 +295,11 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 103.577
+      Scale: 88.3021
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 0.369001
-      Y: 0.716519
+      X: 1.09209
+      Y: 2.61062
     Saved: ~
 Window Geometry:
   Displays:

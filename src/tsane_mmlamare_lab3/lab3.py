@@ -12,18 +12,18 @@ Since:
 	- 3/30/2017
 
 Version:
-	- 1.1 Moved A* stuff into `astar.py`
+	- 1.1 Moved A* implementation into `astar.py`
 	- 1.0 Initial Commit
 """
 
 import rospy
 from std_msgs.msg import Float64
 from nav_msgs.msg import MapMetaData, OccupancyGrid
-from nav_msgs.msg import GridCells
+from nav_msgs.msg import GridCells, Path
 from geometry_msgs.msg import PoseStamped, Point
 from random import randint
-
 from astar import Node, a_star as astar
+from math import atan2
 """
 Callback function for subscription to the map
 
@@ -43,18 +43,8 @@ Parameters:
 	- msg	{OccupancyGrid} The incoming message from the subscription
 """
 def map_callback(msg):
-	global theMap
-	global goal
-
-	theMap = [[0 for x in range(msg.info.width)] for y in range(msg.info.height)]
-
-	row = col = -1
-	for i in range(len(msg.data)):
-		if i % msg.info.width == 0:
-			row += 1
-			col = 0
-		theMap[row][col] = Node(row, col, goal)
-		col += 1
+	global mapMsg
+	mapMsg = msg
 		
 """
 Callback function for subscription to the map
@@ -73,7 +63,8 @@ Parameters:
 """
 def start_callback(msg):
 	global start
-	start = msg.pose
+	start = msg
+	print start
 
 """
 Callback function for subscription to the map
@@ -83,7 +74,8 @@ Parameters:
 """
 def goal_callback(msg):
 	global goal
-	goal = msg.pose
+	goal = msg
+	print goal
 
 
 def makePoint():
@@ -122,31 +114,74 @@ def coloring():
 # Main
 if __name__ == '__main__':
 	global start
+	global goal
+	global mapMsg
+
 	start = PoseStamped()
 	start.pose.position.x = 0
 	start.pose.position.y = 0
 
-	global goal
 	goal = PoseStamped()
 	goal.pose.position.x = 5
-	goal.pose.position.y = 5
-	
+	goal.pose.position.y = 2
+
 	rospy.init_node('tsane_mmlamare_lab3')
 
 	# Publishers
-	
+	point_pub = rospy.Publisher('/a_star/frontier', GridCells, queue_size=10)	
+
 	# Subscribers
 	metadata_sub = rospy.Subscriber('/map_metadata', MapMetaData, metadata_callback)
 	map_sub = rospy.Subscriber('/map', OccupancyGrid, map_callback)
 	entropy_sub = rospy.Subscriber('/slam_gmapping/entropy', Float64, entropy_callback)
 
-	start_sub = rospy.Subscriber('/initalpose', PoseStamped, start_callback)
+	start_sub = rospy.Subscriber('/initialpose', PoseStamped, start_callback)
 	goal_sub = rospy.Subscriber('/move_base_simple/goal', PoseStamped, goal_callback)
 
 	print "Starting Lab 3"
 
-	while raw_input() != 'q': 
-		coloring()
+	start = PoseStamped()
+	start.pose.position.x = 0
+	start.pose.position.y = 0
+
+	print "Waiting for data..."
+	while raw_input() != 'q':
+		try:
+			print start
+			print goal
+			mapMsg
+		except NameError:
+			print 'NO DATA FOUND'
+		else:
+			theMap = [[0 for x in range(mapMsg.info.width)] for y in range(mapMsg.info.height)]
+
+			row = col = -1
+			for i in range(len(mapMsg.data)):
+				if i % mapMsg.info.width == 0:
+					row += 1
+					col = 0
+				theMap[row][col] = Node(row, col, goal)
+				col += 1
+		
+			path_msg = Path()
+			lastx = 0
+			lasty = -1 #have its inital pose pointing up the y-axis
+			for point in astar(theMap, start, goal):
+				pose = PoseStamped()
+				x = point.x
+				y = point.y
+
+				pose.header.stamp = rospy.Time()
+				pose.pose.position.x = x
+				pose.pose.position.y = y
+				pose.pose.orientation.x = x
+				pose.pose.orientation.y = y
+				pose.pose.orientation.w = atan2(y - lasty,x - lastx)
+
+				lastx = x
+				lasty = y
+
+				print pose
 
 	print "Lab 3 Finished"
 	

@@ -16,9 +16,11 @@ Version:
 """
 
 # Imports
+import rospy
 from heapq import *
 import math
-
+from nav_msgs.msg import GridCells
+from geometry_msgs.msg import Point
 
 """
 A class containing Node information
@@ -37,6 +39,9 @@ class Node:
 
 	def __lt__(self, other):
 		return (self.g + self.h) <= (other.g + other.h)
+
+	def __eq__(self, other):
+		return self.x == other.x and self.y == other.y
 		
 
 def printNode(node):
@@ -52,58 +57,101 @@ Parameters:
 	- theMap {arr[][]} The 
 """
 def a_star(theMap, start, goal):	
-	gridCells = GridCells()
-	gridCells = GridCells()
+	closedGridCells = GridCells()
+	frontierGridCells = GridCells()
 
-	gridCells.header.stamp = rospy.Time()
-	gridCells.header.frame_id = 'map'
+	closedGridCells.header.stamp = rospy.Time()
+	closedGridCells.header.frame_id = 'map'
+	frontierGridCells.header.stamp = rospy.Time()
+	frontierGridCells.header.frame_id = 'map'
 
 	#set size of points
-	gridCells.cell_width = 0.25
-	gridCells.cell_height = 0.25
+	closedGridCells.cell_width = 0.25
+	closedGridCells.cell_height = 0.25
 
-	point_pub = rospy.Publisher('/a_star/frontier', GridCells, queue_size=10)
+	frontierGridCells.cell_width = 0.25
+	frontierGridCells.cell_height = 0.25
 
+	frontier_pub = rospy.Publisher('/a_star/frontier', GridCells, queue_size=10)
+	closed_pub = rospy.Publisher('/a_star/closed', GridCells, queue_size=10)
+
+	# The set of nodes that has been seen already
 	closedSet = []
+
+	# The frontier
 	openSet = [
 		theMap[start.pose.position.x][start.pose.position.y]
 	]
+	
+	startPoint = Point()
+	startPoint.x = start.pose.position.x
+	startPoint.y = start.pose.position.y
+
+	frontierGridCells.cells.append(startPoint)
+	
+	# A flag to make sure we produce the correct print statement
+	success = False 
 
 	while not len(openSet) == 0:
 		heapify(openSet)
 		current = openSet[0]
 	
 		if reached(goal, current):
-			#return reconstruct_path(current, current.parent) #still need to write this
-		
+			goalPoint = Point()
+			goalPoint.x = current.x
+			goalPoint.y = current.y
+
+			closedGridCells.cells.append(goalPoint)
+			frontierGridCells.cells = []
+
+			closed_pub.publish(closedGridCells)
+			rospy.sleep(rospy.Duration(0.5))
+			frontier_pub.publish(frontierGridCells)
+			rospy.sleep(rospy.Duration(0.5))
+			
+			return closedSet
+			
+		currentPoint = Point()
+		currentPoint.x = current.x
+		currentPoint.y = current.y
+	
 		openSet.remove(current)
+		print frontierGridCells.cells
+		frontierGridCells.cells.remove(currentPoint)
+		
 		closedSet.append(current)
+		closedGridCells.cells.append(currentPoint)		
   
 		for n in getNeighbors(current, goal):
-			print "Using "
-			printNode(current)
-			print "as current"
-
 			if n in closedSet:
 				continue
-			printNode(n)
+
 			tentative_gCost = current.g + 1
 
 			n.g = 100
 			if n not in openSet:
 				openSet.append(n)			
+				
+				nPoint = Point()
+				nPoint.x = n.x
+				nPoint.y = n.y
+	
+				frontierGridCells.cells.append(nPoint)	
 			elif tentative_gCost >= n.g:
 				continue
 
 			n.parent = current
 			n.g = tentative_gCost
-			f = n.g + n.h
-			print f
-			closedSet.append(n)
-
-			#while raw_input() != 'c': continue
-
-	print "A* Fucked Up"
+			f = n.g + n.h			
+	
+		#COLORS MOTHERFUCKER
+		frontier_pub.publish(frontierGridCells)
+		rospy.sleep(rospy.Duration(0.5))
+		closed_pub.publish(closedGridCells)
+		rospy.sleep(rospy.Duration(0.5))
+			
+	if not success:
+		print "A* Fucked Up"
 	exit()
 
 """
