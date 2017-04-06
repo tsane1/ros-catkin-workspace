@@ -62,7 +62,7 @@ class AsyncValue:
 	Replace the inner value
 
 	Paramters:
-		- value {} New value to wrap
+		- value {untyped} New value to wrap
 	"""
 	def wrap(self, value):
 		self.__value = value
@@ -84,9 +84,3 @@ def main():
 	except NameError:
 		callback(0)
 		print av.unwrap()
-
-main()	
-
-
-
-

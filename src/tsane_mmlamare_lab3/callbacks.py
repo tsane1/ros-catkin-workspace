@@ -62,7 +62,7 @@ class AsyncValue:
 	Replace the inner value
 
 	Paramters:
-		- value {} New value to wrap
+		- value {UNTYPED} New value to wrap
 	"""
 	def wrap(self, value):
 		self.__value = value
