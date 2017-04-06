@@ -97,6 +97,8 @@ def a_star(theMap, start, goal):
 		current = openSet[0]
 	
 		if reached(goal, current):
+			closedSet.append(current)
+			
 			goalPoint = Point()
 			goalPoint.x = current.x
 			goalPoint.y = current.y
@@ -127,7 +129,8 @@ def a_star(theMap, start, goal):
 				continue
 
 			tentative_gCost = current.g + 1
-
+			#math.sqrt((n.x - current.x) ** 2 + (n.y - current.y) ** 2)
+			
 			n.g = 100
 			if n not in openSet:
 				openSet.append(n)			
@@ -149,10 +152,58 @@ def a_star(theMap, start, goal):
 		rospy.sleep(rospy.Duration(0.5))
 		closed_pub.publish(closedGridCells)
 		rospy.sleep(rospy.Duration(0.5))
-			
+	
+		while raw_input() != 'c': continue
+
 	if not success:
 		print "A* Fucked Up"
 	exit()
+
+"""
+A smaller, pared-down version of A*
+"""
+def a_star_small(theMap, start, goal):	
+	# The set of nodes that has been seen already
+	closedSet = []
+
+	# The frontier
+	openSet = [
+		theMap[int(start.pose.position.x)][int(start.pose.position.y)]
+	]
+	
+	# A flag to make sure we produce the correct print statement
+	success = False 
+
+	while not len(openSet) == 0:
+		heapify(openSet)
+		current = openSet[0]
+	
+		if reached(goal, current):
+			closedSet.append(current)
+			return closedSet
+	
+		# Mark current Node as closed
+		openSet.remove(current)
+		closedSet.append(current)
+  
+		for n in getNeighbors(current, goal):
+			if n in closedSet:
+				continue
+
+			tentative_gCost = current.g + 1
+
+			if n not in openSet:
+				openSet.append(n)			
+				
+			elif tentative_gCost >= n.g:
+				continue
+
+			n.parent = current
+			n.g = tentative_gCost
+			f = n.g + n.h			
+		
+	if not success:
+		print "A* Fucked Up"
 
 """
 This is a shitty subroutine that gets all the neighbors for a node

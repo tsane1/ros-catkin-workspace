@@ -8,10 +8,12 @@ Authors:
   - Matthew Lamare
 
 Since:
+	- 4/5/2017
 	- 4/3/2017
 	- 3/30/2017
 
 Version:
+	- 1.2 Refactoring to run as a separate node providing a service
 	- 1.1 Moved A* implementation into `astar.py`
 	- 1.0 Initial Commit
 """
@@ -22,8 +24,9 @@ from nav_msgs.msg import MapMetaData, OccupancyGrid
 from nav_msgs.msg import GridCells, Path
 from geometry_msgs.msg import PoseStamped, Point
 from random import randint
-from astar import Node, a_star as astar
+from astar import Node, a_star as astar, a_star_small as astar_srv
 from math import atan2
+from nav_msgs.srv import GetPlan
 """
 Callback function for subscription to the map
 
@@ -45,39 +48,10 @@ Parameters:
 def map_callback(msg):
 	global mapMsg
 	mapMsg = msg
-		
-"""
-Callback function for subscription to the map
 
-Parameters:
-	- msg	{Float64} The incoming message from the subscription
-"""
-def entropy_callback(msg):
-	pass
-
-"""
-Callback function for subscription to the starting pose
-
-Parameters:
-	- msg	{PoseStamped} The incoming message from the subscription
-"""
-def start_callback(msg):
-	global start
-	start = msg
-	print start
-
-"""
-Callback function for subscription to the map
-
-Parameters:
-	- msg	{PoseStamped} The incoming message from the subscription
-"""
-def goal_callback(msg):
-	global goal
-	goal = msg
-	print goal
-
-
+################################################################################
+# Coloring
+################################################################################
 def makePoint():
 	#randomizer
 	randWidth = randint(0, 2)
@@ -110,11 +84,71 @@ def coloring():
 	point_pub.publish(gridCells)
 	print "done"
 	rospy.sleep(rospy.Duration(0.5))
+################################################################################
+
+"""
+The path planner subroutine
+
+Parameters:
+	- request	{Dict} The incoming request
+
+Returns:
+	- A {Path} message containing the path from start to goal
+"""
+def get_path(request):
+	print "Recieved a request for a plan!"
+	global mapMsg
+
+	start = request.start
+	goal = request.goal
+
+	try: mapMsg
+	except NameError: print 'NO MAP FOUND'
+	else:
+		# Initialize map as a double array of Node objects
+		theMap = [[0 for x in range(mapMsg.info.width)] for y in range(mapMsg.info.height)]
+
+		# Populate double array from row-oriented single array
+		row = col = -1
+		for i in range(len(mapMsg.data)):
+			if i % mapMsg.info.width == 0:
+				row += 1
+				col = 0
+			theMap[row][col] = Node(row, col, goal)
+			col += 1
+		
+			path_msg = Path()
+			path_msg.header.stamp = rospy.Time()
+			path_msg.header.frame_id = 'map'
+
+			lastx = 0
+			lasty = -1 
+
+			# Do A*, then convert output path into Poses and append to Path
+			for point in astar_srv(theMap, start, goal):
+				poseStamped = PoseStamped()
+				x = point.x
+				y = point.y
+
+				poseStamped.header.stamp = rospy.Time()
+
+				poseStamped.pose.position.x = x
+				poseStamped.pose.position.y = y
+				poseStamped.pose.orientation.x = x
+				poseStamped.pose.orientation.y = y
+				poseStamped.pose.orientation.w = atan2(y - lasty, x - lastx)
+
+				lastx = x
+				lasty = y
+
+				path_msg.poses.append(poseStamped)
+
+			print "Got a path, here ya go..."
+			return path_msg
+	
 
 # Main
 if __name__ == '__main__':
-	global start
-	global goal
 	global mapMsg
 
 	start = PoseStamped()
@@ -128,23 +162,18 @@ if __name__ == '__main__':
 	rospy.init_node('tsane_mmlamare_lab3')
 
 	# Publishers
-	point_pub = rospy.Publisher('/a_star/frontier', GridCells, queue_size=10)	
+	point_pub = rospy.Publisher('/a_star/frontier', GridCells, queue_size=10)
+	path_pub = rospy.Publisher('/a_star/path', Path, queue_size=10)
 
 	# Subscribers
 	metadata_sub = rospy.Subscriber('/map_metadata', MapMetaData, metadata_callback)
 	map_sub = rospy.Subscriber('/map', OccupancyGrid, map_callback)
-	entropy_sub = rospy.Subscriber('/slam_gmapping/entropy', Float64, entropy_callback)
-
-	start_sub = rospy.Subscriber('/initialpose', PoseStamped, start_callback)
-	goal_sub = rospy.Subscriber('/move_base_simple/goal', PoseStamped, goal_callback)
 
 	print "Starting Lab 3"
 
-	start = PoseStamped()
-	start.pose.position.x = 0
-	start.pose.position.y = 0
+	# planner = rospy.Service('path_planner', GetPlan, get_path)
+	# planner.spin()
 
-	print "Waiting for data..."
 	while raw_input() != 'q':
 		try:
 			print start
@@ -164,6 +193,7 @@ if __name__ == '__main__':
 				col += 1
 		
 			path_msg = Path()
+			path_msg.header.frame_id = 'map'
 			lastx = 0
 			lasty = -1 #have its inital pose pointing up the y-axis
 			for point in astar(theMap, start, goal):
@@ -172,6 +202,8 @@ if __name__ == '__main__':
 				y = point.y
 
 				pose.header.stamp = rospy.Time()
+				pose.header.frame_id = 'map'
+
 				pose.pose.position.x = x
 				pose.pose.position.y = y
 				pose.pose.orientation.x = x
@@ -181,7 +213,10 @@ if __name__ == '__main__':
 				lastx = x
 				lasty = y
 
-				print pose
+				path_msg.poses.append(pose)
 
+			path_pub.publish(path_msg)
+			rospy.sleep(rospy.Duration(0.5))
+	
 	print "Lab 3 Finished"
 	

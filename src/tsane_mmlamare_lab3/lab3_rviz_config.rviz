@@ -10,6 +10,7 @@ Panels:
         - /Frontier1
         - /Frontier1/Status1
         - /Path1
+        - /Path2
       Splitter Ratio: 0.5
     Tree Height: 776
   - Class: rviz/Selection
@@ -263,6 +264,21 @@ Visualization Manager:
       Enabled: true
       Name: Path
       Topic: /a_star/closed
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 25; 255; 0
+      Enabled: true
+      Line Style: Lines
+      Line Width: 0.03
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Topic: /a_star/path
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:
