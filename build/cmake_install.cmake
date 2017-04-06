@@ -118,6 +118,7 @@ IF(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   INCLUDE("/home/tsane/Documents/ros-catkin-workspace/build/gtest/cmake_install.cmake")
   INCLUDE("/home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_lab3/cmake_install.cmake")
+  INCLUDE("/home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_mwpiazza_lab4/cmake_install.cmake")
 
 ENDIF(NOT CMAKE_INSTALL_LOCAL_ONLY)
 

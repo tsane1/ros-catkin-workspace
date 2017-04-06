@@ -14,9 +14,12 @@ SET(CMAKE_MAKEFILE_DEPENDS
   "catkin_generated/installspace/_setup_util.py"
   "catkin_generated/order_packages.cmake"
   "tsane_mmlamare_lab3/catkin_generated/package.cmake"
+  "tsane_mmlamare_mwpiazza_lab4/catkin_generated/package.cmake"
   "/home/tsane/Documents/ros-catkin-workspace/src/CMakeLists.txt"
   "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_lab3/CMakeLists.txt"
   "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_lab3/package.xml"
+  "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4/CMakeLists.txt"
+  "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4/package.xml"
   "/opt/ros/indigo/share/catkin/cmake/../package.xml"
   "/opt/ros/indigo/share/catkin/cmake/all.cmake"
   "/opt/ros/indigo/share/catkin/cmake/assert.cmake"
@@ -120,6 +123,7 @@ SET(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   "gtest/CMakeFiles/CMakeDirectoryInformation.cmake"
   "tsane_mmlamare_lab3/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "tsane_mmlamare_mwpiazza_lab4/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:

@@ -6,3 +6,4 @@
 # testing this directory and lists subdirectories to be tested as well.
 SUBDIRS(gtest)
 SUBDIRS(tsane_mmlamare_lab3)
+SUBDIRS(tsane_mmlamare_mwpiazza_lab4)

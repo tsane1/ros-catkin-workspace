@@ -332,6 +332,21 @@ clean: tsane_mmlamare_lab3/CMakeFiles/_catkin_empty_exported_target.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Directory level rules for directory tsane_mmlamare_mwpiazza_lab4
+
+# Convenience name for "all" pass in the directory.
+tsane_mmlamare_mwpiazza_lab4/all:
+.PHONY : tsane_mmlamare_mwpiazza_lab4/all
+
+# Convenience name for "clean" pass in the directory.
+tsane_mmlamare_mwpiazza_lab4/clean:
+.PHONY : tsane_mmlamare_mwpiazza_lab4/clean
+
+# Convenience name for "preinstall" pass in the directory.
+tsane_mmlamare_mwpiazza_lab4/preinstall:
+.PHONY : tsane_mmlamare_mwpiazza_lab4/preinstall
+
+#=============================================================================
 # Special targets to cleanup operation of make.
 
 # Special rule to run CMake to check the build system integrity.
