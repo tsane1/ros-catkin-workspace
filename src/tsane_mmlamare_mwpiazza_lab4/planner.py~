@@ -18,11 +18,12 @@ Version:
 # Imports
 import rospy
 import math
+from heapq import heapify
 from callbacks import AsyncValue
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import MapMetaData, OccupancyGrid
 from nav_msgs.srv import GetPlan
-import heapq
+from nav_msgs.msg import Path
 
 distance = lambda x1,y1,x2,y2: math.sqrt((x2 - x1) ** 2 + (y1 - y2)**2)
 
@@ -69,7 +70,7 @@ def run(theMap, start, goal):
 		heapify(openSet)
 		current = openSet[0]
 	
-		if reached(goal, current):
+		if distance(current.x, current.y, goal.pose.position.x, goal.pose.position.y):
 			closedSet.append(current)
 			return closedSet
 	
@@ -124,7 +125,7 @@ def get_neighbors(theMap, currentNode):
 """
 
 """
-def create_posestamped(self, x, y, radians):   
+def create_posestamped(x, y, radians):   
 	pose = PoseStamped()
 	
 	pose.header.seq = 1
@@ -173,7 +174,7 @@ def get_path(request):
 			row += 1
 			col = 0
 
-		h = distance(row, col, goal.position.pose.x, goal.position.pose.y)
+		h = distance(row, col, goal.pose.position.x, goal.pose.position.y)
 	
 		theMap[row][col] = Node(row, col, p, h)
 		col += 1
@@ -239,6 +240,9 @@ if __name__ == '__main__':
 	global asyncOccupancyGrid
 	global asyncMapMetaData
 	
+	asyncOccupancyGrid = AsyncValue()
+	asyncMapMetaData = AsyncValue()
+
 	# Spin until callback values are populated
 	print 'Waiting for map data...'
 	while asyncOccupancyGrid.is_locked() and asyncMapMetaData.is_locked():

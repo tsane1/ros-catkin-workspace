@@ -19,9 +19,6 @@ A wrapper for a variable populated by a callback function
 class AsyncValue:
 	"""
 	Constructor
-	
-	Parameters:
-		- value {} The value being wrapped
 	"""
 	def __init__(self):
 		self.__value = None
@@ -31,16 +28,10 @@ class AsyncValue:
 	Test if the value is ready to use
 
 	Returns:
-		- True if the value is usable, False otherwise
+		- False if the value is usable, True otherwise
 	"""	
 	def is_locked(self):
 		return self.__locked
-
-	"""
-	Lock the value
-	"""
-	def lock(self):
-		self.__locked = True	
 
 	"""
 	Release the lock, allow the value to be accessed
@@ -80,7 +71,11 @@ def main():
 	av = AsyncValue()
 
 	try:
+		print 'Trying to unwrap...'
 		av.unwrap()
 	except NameError:
-		callback(0)
+		print 'Unwrap failed, unlocking.'
+		callback('Unwrap worked!')
 		print av.unwrap()
+
+# main()
