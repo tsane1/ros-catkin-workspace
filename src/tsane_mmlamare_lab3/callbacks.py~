@@ -1,5 +1,7 @@
+#!/usr/bin/env python
+
 """
-A neat little wrapper for callback values
+A neat little encapsulation of callback-populated values
 
 Author:
 	- Tanuj Sane
@@ -15,16 +17,76 @@ Version:
 A wrapper for a variable populated by a callback function
 """
 class AsyncValue:
-	def __init__(self, value):
-		self.__value = value
+	"""
+	Constructor
+	
+	Parameters:
+		- value {} The value being wrapped
+	"""
+	def __init__(self):
+		self.__value = None
 		self.__locked = True
 	
+	"""
+	Test if the value is ready to use
+
+	Returns:
+		- True if the value is usable, False otherwise
+	"""	
+	def isLocked(self):
+		return self.__locked
+
+	"""
+	Lock the value
+	"""
 	def lock(self):
 		self.__locked = True	
 
+	"""
+	Release the lock, allow the value to be accessed
+	"""
 	def unlock(self):
 		self.__locked = False
 
-	def get(self):
-		return self.__value
-		
+	"""
+	Releases the value if the lock has been released
+
+	Raises:
+		- NameError if the value is locked
+	"""
+	def unwrap(self):
+		if not self.__locked: return self.__value
+		else: raise NameError
+
+	"""
+	Replace the inner value
+
+	Paramters:
+		- value {} New value to wrap
+	"""
+	def wrap(self, value):
+		self.__value = value
+
+"""
+Sample usage
+"""
+
+def callback(msg):
+	av.wrap(msg)
+	av.unlock()
+
+def main():
+	global av
+	av = AsyncValue()
+
+	try:
+		av.unwrap()
+	except NameError:
+		callback(0)
+		print av.unwrap()
+
+main()	
+
+
+
+
