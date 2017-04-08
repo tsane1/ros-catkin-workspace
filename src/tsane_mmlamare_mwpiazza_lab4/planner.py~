@@ -16,8 +16,7 @@ Version:
 """
 
 # Imports
-import rospy
-import math
+import rospy, math, tf
 from heapq import heapify
 from callbacks import AsyncValue
 from geometry_msgs.msg import PoseStamped
@@ -25,7 +24,8 @@ from nav_msgs.msg import MapMetaData, OccupancyGrid
 from nav_msgs.srv import GetPlan
 from nav_msgs.msg import Path
 
-distance = lambda x1,y1,x2,y2: math.sqrt((x2 - x1) ** 2 + (y1 - y2)**2)
+def distance(x1, y1, x2, y2):
+	return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
 """
 Encapsulation of A* node data
@@ -45,6 +45,9 @@ class Node:
 
 	def __eq__(self, other):
 		return self.x == other.x and self.y == other.y
+
+	def __str__(self):
+		return '(' + str(self.x) + ', ' + str(self.y) + ')'
 		
 """
 The A* planning algorithm
@@ -69,16 +72,16 @@ def run(theMap, start, goal):
 	while not len(openSet) == 0:
 		heapify(openSet)
 		current = openSet[0]
-	
-		if distance(current.x, current.y, goal.pose.position.x, goal.pose.position.y):
+		
+		if distance(current.x, current.y, goal.pose.position.x, goal.pose.position.y) == 0:
 			closedSet.append(current)
 			return closedSet
 	
-		# Mark current Node as closed
-		openSet.remove(current)
+		# Mark current Node as closedsuccess
 		closedSet.append(current)
+		openSet.remove(current)
   
-		for n in get_neighbors(current, goal):
+		for n in get_neighbors(theMap, current):
 			if n in closedSet:
 				continue
 
@@ -93,7 +96,8 @@ def run(theMap, start, goal):
 			n.g = tentative_gCost
 		
 	if not success:
-		print "A* Fucked Up"
+		print "Nope fuck you"
+		return "Nope fuck you" 
 
 """
 Consolidates neighbors of current node
@@ -114,12 +118,18 @@ def get_neighbors(theMap, currentNode):
 	y = currentNode.y
 
 	out = []
-	for i in range(x - 1, x + 1):
-		for j in range(y - 1, y + 1):
-			if i < 0 or j < 0 or i > w or j > h:
-				continue		
-			else: out.append(theMap[i][j])
+	
+	out.append(theMap[x - 1][y - 1])
+	out.append(theMap[x][y - 1])
+	out.append(theMap[x + 1][y - 1])	
 
+	out.append(theMap[x - 1][y])
+	out.append(theMap[x + 1][y])	
+
+	out.append(theMap[x - 1][y + 1])
+	out.append(theMap[x][y + 1])
+	out.append(theMap[x + 1][y + 1])
+	
 	return out
 
 """
@@ -155,21 +165,22 @@ Returns:
 """
 def get_path(request):
 	global asyncOccupancyGrid
-	global asyncMapMetaData	
 
-	w, h = asyncMapMetaData.unwrap()
-	og = asyncOccupancyGrid.unwrap() 
+	grid = asyncOccupancyGrid.unwrap() 
+	w = grid.info.width
+	h = grid.info.height
+	res = grid.info.resolution
 
 	start = request.start
 	goal = request.goal
 
 	# Initialize map as a double array of Node objects
-	theMap = [[0 for x in range(w)] for y in range(h)]
+	theMap = [[None for x in range(w)] for y in range(h)]
 
 	# Populate double array from row-oriented single array
 	row = col = p = -1
-	for i in range(len(og.data)):
-		p = og.data[i]
+	for i in range(len(grid.data)):
+		p = grid.data[i]
 		if i % w == 0:
 			row += 1
 			col = 0
@@ -179,44 +190,32 @@ def get_path(request):
 		theMap[row][col] = Node(row, col, p, h)
 		col += 1
 	
-		path_msg = Path()
-		path_msg.header.stamp = rospy.Time()
-		path_msg.header.frame_id = 'map'
+	path_msg = Path()
+	path_msg.header.stamp = rospy.Time()
+	path_msg.header.frame_id = 'map'
 		
-		lastx = 0
-		lasty = -1 
+	lastx = 0
+	lasty = -1 
 
-		# Do A*, then convert output path into Poses and append to Path
-		for point in run(theMap, start, goal):
-			poseStamped = PoseStamped()
+	# Do A*, then convert output path into Poses and append to Path
+	for point in run(theMap, start, goal):
+		poseStamped = PoseStamped()
 
-			# Alias for easy typing			
-			x = point.x
-			y = point.y
+		# Alias for easy typing			
+		x = point.x
+		y = point.y
 
-			dx = lastx - x
-			dy = lasty -y
+		dx = lastx - x
+		dy = lasty -y
 
-			path_msg.poses.append(create_posestamped(lastx, lasty, math.atan2(dy, dx)))
+		path_msg.poses.append(create_posestamped(lastx, lasty, math.atan2(dy, dx)))
 			
-			# Update previous values
-			lastx = x
-			lasty = y
+		# Update previous values
+		lastx = x
+		lasty = y
 
-		print "Got a path, here ya go..."
-		return path_msg
-
-"""
-Callback for /map_metadata subscription
-
-Parameters:
-	- msg {MapMetaData} The metadata for the map
-"""
-def mapmetadata_callback(msg):
-	global asyncMapMetaData
-	asyncMapMetaData = AsyncValue()
-	asyncMapMetaData.wrap((msg.width, msg.height))
-	asyncMapMetaData.unlock()
+	print "Got a path, here ya go..."
+	return path_msg
 
 """
 Callback for /map subscription
@@ -234,18 +233,14 @@ if __name__ == '__main__':
 	rospy.init_node('path_planner')
 	
 	# Subscribers
-	metadata_sub = rospy.Subscriber('/map_metadata', MapMetaData, mapmetadata_callback)
 	map_sub = rospy.Subscriber('/map', OccupancyGrid, map_callback)
 
 	global asyncOccupancyGrid
-	global asyncMapMetaData
-	
 	asyncOccupancyGrid = AsyncValue()
-	asyncMapMetaData = AsyncValue()
 
 	# Spin until callback values are populated
 	print 'Waiting for map data...'
-	while asyncOccupancyGrid.is_locked() and asyncMapMetaData.is_locked():
+	while asyncOccupancyGrid.is_locked():
 		continue
 	
 	print 'Map data recieved! Starting service...'

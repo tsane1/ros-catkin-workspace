@@ -9,10 +9,14 @@ import rospy
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 from nav_msgs.srv import GetPlan
+from std_msgs.msg import String
 
 if __name__ == '__main__':
 	rospy.init_node('dummy')
 	rospy.wait_for_service('path_planner')
+
+	planner = rospy.ServiceProxy('path_planner', GetPlan)
+	path_pub = rospy.Publisher('a_star/path', Path, queue_size=10)
 
 	start = PoseStamped()
 	start.pose.position.x = input("Start X:")
@@ -22,9 +26,6 @@ if __name__ == '__main__':
 	goal.pose.position.x = input("Goal X:")
 	goal.pose.position.y = input("Goal Y:")
 
-	planner = rospy.ServiceProxy('path_planner', GetPlan)
-	path_pub = rospy.Publisher('/a_star/path', Path, queue_size=0)
-
 	try:
 		path = planner(start, goal, 0.5)
 		
@@ -33,9 +34,8 @@ if __name__ == '__main__':
 
 	else:
 		print "Thanks!"
-		
-		for i in range(10):
-			path_pub.publish(path.plan)
-			rospy.sleep(rospy.Duration(0.5))
+
+		path_pub.publish(path.plan)
+		rospy.sleep(rospy.Duration(0.5))
 
 	rospy.spin()
