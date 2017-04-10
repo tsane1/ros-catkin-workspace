@@ -3,15 +3,15 @@
 """ 
 ROS Server calculating the path between two points on a map using the A* algorithm
 
-Authors: Joseph Lombardi, Matthew Piazza
-Date: 4/5/17
+Authors: Matthew Piazza
+Date: 4/10/17
 """
 
 import math
 import rospy, tf
 from nav_msgs.msg import GridCells, Path
 from geometry_msgs.msg import Point, PoseStamped
-from mpiazza_jlombardi_lab3.srv import *
+from tsane_mmlamare_mwpiazza_lab4.srv import *
 
 Z_AXIS = (0, 0, 1)
 
@@ -29,8 +29,8 @@ class StarNode():
 # ROS node 
 class AStarServiceServer():
     # set up server  
-    def __init__(self):          
-        rospy.init_node('a_star_server_mpiazza_jlombardi')
+    def __init__(self):        	    
+        rospy.init_node('a_star_server_apo')
         s = rospy.Service('a_star', AStar, self.handleAStar)
         rospy.spin()                    
 
@@ -38,13 +38,9 @@ class AStarServiceServer():
     def handleAStar(self, msg):
         self.readOccupancyGridMap(msg.map)  
         self.frameID = msg.frameID.data      
-        waypointArray = self.aStar(msg.start.x, msg.start.y, msg.goal.x, msg.goal.y)
-        waypoints = self.calculateWaypoints(waypointArray)
-        pathGrid = self.createGridCellsFromArray(waypointArray) 
-        visitedGrid = self.createGridCellsFromArray(self.visitedNodes)
-        frontierGrid = self.createGridCellsFromArray(self.frontierNodes) 
-        print("A* Finished!")
-        return AStarResponse(waypoints, visitedGrid, frontierGrid, pathGrid)
+        waypointArray = self.aStar(msg.start.position.x, msg.start.position.y, msg.goal.position.x, msg.goal.position.y)
+        waypoints = self.calculateWaypoints(waypointArray)        
+        return AStarResponse(waypoints)
 
     # convert occupancy grid from RViz to 2D matrix map of StarNodes
     def readOccupancyGridMap(self, map):        
@@ -67,39 +63,39 @@ class AStarServiceServer():
     # calculates best path between the set start and end nodes
     def aStar(self, startX, startY, goalX, goalY):
         startNode = self.getNodeFromXY(startX, startY)
-        goalNode = self.getNodeFromXY(goalX, goalY)
-        self.visitedNodes = [] # list of evaluated nodes
-        self.frontierNodes = [startNode] # list of nodes needing to be evaluated
+        goalNode = self.getNodeFromXY(goalX, goalY)        
+        if startNode and goalNode:
+        	self.visitedNodes = [] # list of evaluated nodes
+        	self.frontierNodes = [startNode] # list of nodes needing to be evaluated
+	        previousStepTo = {} # linked list of most efficient previous steps
+	        startNode.knownCost = 0
+	        startNode.predictedCost = self.heuristic(startNode, goalNode)
 
-        previousStepTo = {} # linked list of most efficient previous steps
-        startNode.knownCost = 0
-        startNode.predictedCost = self.heuristic(startNode, goalNode)
+	        while self.frontierNodes != []:
+	            # check for finished
+	            currentNode = self.getMinimumNode()
+	            if currentNode == goalNode:        
+	                return self.buildPath(previousStepTo, currentNode)
 
-        while self.frontierNodes != []:
-            # check for finished
-            currentNode = self.getMinimumNode()
-            if currentNode == goalNode:        
-                return self.buildPath(previousStepTo, currentNode)
+	            # evaluate possible steps from current node
+	            self.frontierNodes.remove(currentNode)
+	            self.visitedNodes.append(currentNode)
+	            for neighborNode in self.getNeighbors(currentNode):
+	                # skip neighbor if already visited, otherwise it is a frontier cell to check
+	                if neighborNode in self.visitedNodes:
+	                    continue
 
-            # evaluate possible steps from current node
-            self.frontierNodes.remove(currentNode)
-            self.visitedNodes.append(currentNode)
-            for neighborNode in self.getNeighbors(currentNode):
-                # skip neighbor if already visited, otherwise it is a frontier cell to check
-                if neighborNode in self.visitedNodes:
-                    continue
+	                # check if neighbor is new cell and an optimal path
+	                neighborKnownCost = currentNode.knownCost + self.heuristic(currentNode, neighborNode)
+	                if neighborNode not in self.frontierNodes and not neighborNode.isWall:
+	                    self.frontierNodes.append(neighborNode)
+	                elif neighborKnownCost >= neighborNode.knownCost and neighborNode.knownCost != -1:
+	                    continue
 
-                # check if neighbor is new cell and an optimal path
-                neighborKnownCost = currentNode.knownCost + self.heuristic(currentNode, neighborNode)
-                if neighborNode not in self.frontierNodes and not neighborNode.isWall:
-                    self.frontierNodes.append(neighborNode)
-                elif neighborKnownCost >= neighborNode.knownCost and neighborNode.knownCost != -1:
-                    continue
-
-                # update neighbor node with new optimal costs
-                previousStepTo[neighborNode] = currentNode
-                neighborNode.knownCost = neighborKnownCost
-                neighborNode.predictedCost = neighborNode.knownCost + self.heuristic(neighborNode, goalNode)
+	                # update neighbor node with new optimal costs
+	                previousStepTo[neighborNode] = currentNode
+	                neighborNode.knownCost = neighborKnownCost
+	                neighborNode.predictedCost = neighborNode.knownCost + self.heuristic(neighborNode, goalNode)
 
         print("A* could not find a path :( ")
         return []
@@ -185,6 +181,7 @@ class AStarServiceServer():
         		delta = newDelta
         		prevNode = currentNode 
         	waypoints.poses.append(self.createPoseStamped(prevNode.x, prevNode.y, math.atan2(delta[1], delta[0])))
+        	print("Path found, here ya go!")
     	return waypoints
 
     # create PoseStamped message given x, y, and radian orientation

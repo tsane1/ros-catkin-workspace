@@ -1,9 +1,6 @@
 std_msgs/String frameID
 nav_msgs/OccupancyGrid map
-geometry_msgs/Point start
-geometry_msgs/Point goal
+geometry_msgs/Pose start
+geometry_msgs/Pose goal
 ---
 nav_msgs/Path waypoints
-nav_msgs/GridCells visited
-nav_msgs/GridCells frontier
-nav_msgs/GridCells path

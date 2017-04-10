@@ -3,78 +3,65 @@
 """ 
 ROS Server calculating the path between two points on a map using the A* algorithm
 
-Authors: Joseph Lombardi, Matthew Piazza
-Date: 4/5/17
+Authors: Matthew Piazza
+Date: 4/10/17
 """
 
-import rospy
+import rospy, tf
 from std_msgs.msg import String
-from nav_msgs.msg import GridCells, OccupancyGrid, Path
-from geometry_msgs.msg import Point, PoseWithCovarianceStamped, PointStamped
-from mpiazza_jlombardi_lab3.srv import *
+from nav_msgs.msg import OccupancyGrid, Path
+from geometry_msgs.msg import Point, Pose, Quaternion, PoseStamped, PointStamped
+from tsane_mmlamare_mwpiazza_lab4.srv import *
 
 # ROS node 
 class AStarServiceClient():
     def __init__(self):  
-        rospy.init_node('a_star_client_mpiazza_jlombardi')
+        rospy.init_node('a_star_client_apo')
 
         # set up topics   
         self.subMap = rospy.Subscriber("/map", OccupancyGrid, self.saveOccupancyGrid, queue_size=1) # Callback function to load map on initial load                           
-        self.subStart = rospy.Subscriber("/initialpose", PoseWithCovarianceStamped, self.setStart, queue_size=1) # Callback function to load map on initial load        
-        self.subEnd = rospy.Subscriber("/clicked_point", PointStamped, self.setEnd, queue_size=1) # Callback function to load map on initial load
-        self.pubStart = rospy.Publisher('/startPoint', PointStamped, queue_size=10)    
-        self.pubEnd = rospy.Publisher('/endPoint', PointStamped, queue_size=10)  
-        self.pubFrontier = rospy.Publisher('/frontier', GridCells, queue_size=10) 
-        self.pubVisited = rospy.Publisher('/visited', GridCells, queue_size=10) 
-        self.pubPath = rospy.Publisher('/path', GridCells, queue_size=10)         
-        self.pubWaypoints = rospy.Publisher('/waypoints', Path, queue_size=10)         
+        self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEnd, queue_size=1) # Callback function to load map on initial load
+        self.pubEnd = rospy.Publisher('/endPoint', PointStamped, queue_size=10)      
+        self.pubWaypoints = rospy.Publisher('/waypoints', Path, queue_size=10)     
+        self._odom_list = tf.TransformListener() # Get the robot's Odometry
+        rospy.Timer(rospy.Duration(.1), self.monitorOdometry)
 
         # set up control parameters        
         self.frameID = String()
         self.frameID.data = "map"         
         self.startIsSet = False
-        self.endIsSet = False                    
+        self.endIsSet = False   
         rospy.spin()
+
+    # Read the robot's current position
+    def monitorOdometry(self, event):    
+        self._odom_list.waitForTransform("odom", "base_footprint", rospy.Time(0), rospy.Duration(1.0))
+        (pos, quaternion) = self._odom_list.lookupTransform("odom", "base_footprint", rospy.Time(0)) 
+        self.startPose = Pose()        
+        self.startPose.position = Point(pos[0], pos[1], pos[2])        
+        self.startPose.orientation = Quaternion(quaternion[0], quaternion[1], quaternion[2], quaternion[3])
+        self.startIsSet = True
 
     # save grid as an attribute to send in service
     def saveOccupancyGrid(self, grid):
-        self.map = grid
-
-    # sets start of A* based on 2D Pose Estimate
-    def setStart(self, poseMsg):
-        self.startCoord = Point()
-        self.startCoord.x = poseMsg.pose.pose.position.x
-        self.startCoord.y = poseMsg.pose.pose.position.y
-        self.startCoord.z = 0
-        self.pubStart.publish(self.createPointStamped(self.startCoord.x, self.startCoord.y))
-        self.startIsSet = True
-        if self.startIsSet and self.endIsSet:
-            self.callAStar()
-        else:
-        	print("Please set end point with RViz Publish Point tool")       
+        self.map = grid    
 
     # sets end of A* based on Publish Point
-    def setEnd(self, pointStampedMsg):
-        self.goalCoord = Point()
-        self.goalCoord.x = pointStampedMsg.point.x
-        self.goalCoord.y = pointStampedMsg.point.y
-        self.goalCoord.z = 0
-        self.pubEnd.publish(self.createPointStamped(self.goalCoord.x, self.goalCoord.y))
-        self.endIsSet = True
+    def setEnd(self, poseStampedMsg):        
+        self.goalPose = poseStampedMsg.pose
+        self.pubEnd.publish(self.createPointStamped(self.goalPose.position.x, self.goalPose.position.y)) # send to RViz
+        self.endIsSet = True        
         if self.startIsSet and self.endIsSet:
         	self.callAStar() 
         else:
-        	print("Please set start point with RViz 2D Pose Estimate tool")       
+        	print("Robot odometry unread")
 
     # run A* algorithm and send grid cells to RViz
     def callAStar(self):
         rospy.wait_for_service('a_star')
         try:
             aStarService = rospy.ServiceProxy('a_star', AStar)            
-            response = aStarService(self.frameID, self.map, self.startCoord, self.goalCoord)
-            self.pubFrontier.publish(response.frontier)
-            self.pubVisited.publish(response.visited)
-            self.pubPath.publish(response.path)
+            response = aStarService(self.frameID, self.map, self.startPose, self.goalPose)
             self.pubWaypoints.publish(response.waypoints)       
 
         except rospy.ServiceException, e:
