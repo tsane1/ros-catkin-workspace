@@ -17,9 +17,11 @@ Version:
 
 # Imports
 import rospy, tf, math
-from geometry_msgs.msg import Twist, Pose, Point, Quaternion
-from nav_msgs.msg import Path
+from std_msgs.msg import String
+from nav_msgs.msg import Path, OccupancyGrid
+from geometry_msgs.msg import Twist, Pose, Point, PoseStamped, Quaternion
 from tf.transformations import euler_from_quaternion
+from tsane_mmlamare_mwpiazza_lab4.srv import *
 
 """
 Encapsulation of a Turtlebot with necessary functionality
@@ -34,46 +36,59 @@ class Turtlebot():
         # Kobuki base constants
         self._r = 0.035        # wheel radius, m
         self._L = 0.230        # wheelbase, m
+        self.frameID = String()
+        self.frameID.data = "map" 
 
         # State
+        self.mapIsSet = False
+        self.startIsSet = False
+        self.endIsSet = False
         self.pose = Pose()
-        self.odometry = tf.TransformListener()
-        rospy.Timer(rospy.Duration(.1), self.monitorOdometry)
-		rospy.Timer
 
         # Publishers
-        self.driver = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size = 10)
-		self.pubWaypoints = rospy.Publisher('/waypoints', Path, queue_size=10)
+        self.driver = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=10)
+        self.pubWaypoints = rospy.Publisher('/waypoints', Path, queue_size=10)
         
         # Subscribers            
-        self.nav = rospy.Subscriber('/waypoints', Path, self.navigate)
-		self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEnd, queue_size=1)
+        self.subMap = rospy.Subscriber("/expanded", OccupancyGrid, self.saveMap, queue_size=1)
+        self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEnd, queue_size=1)
+
+        # Timers
+        self.odometry = tf.TransformListener()
+        rospy.Timer(rospy.Duration(.1), self.monitorOdometry)
+        rospy.Timer(rospy.Duration(5), self.pathPlan) 
 
         rospy.spin()
-	
-	"""
-	Helper function to call A* with proper poses
-	"""
-	def setEnd(self, poseStampedMsg):
-        self.goalPose = poseStampedMsg.pose
-        self.endIsSet = True        
-        if self.startIsSet and self.endIsSet:
+    
+    """
+    Helper function to save expanded obstacle map to class
+    """
+    def saveMap(self, grid):
+        self.map = grid
+        self.mapIsSet = True
+
+    """
+    Helper function to call A* with proper poses
+    """
+    def setEnd(self, poseStampedMsg):
+        self.goalPose = poseStampedMsg.pose            
+        if self.startIsSet and self.mapIsSet:
             self.callAStar() 
         else:
-            print("Robot odometry unread")
+            print("Robot odometry or map unread")
 
-
-	"""
-	Asks the AStarService for a new plan	
-	"""
-	def callAStar(self):
-		rospy.wait_for_service('a_star')
-		try:
-        	aStarService = rospy.ServiceProxy('a_star', AStar)            
+    """
+    Asks the AStarService for a new plan    
+    """
+    def callAStar(self):
+        rospy.wait_for_service('a_star')
+        try:
+            aStarService = rospy.ServiceProxy('a_star', AStar)            
             response = aStarService(self.frameID, self.map, self.pose, self.goalPose)
-            self.pubWaypoints.publish(response.waypoints) 
+            self.pubWaypoints.publish(response.waypoints)
+            self.navigate(response.waypoints)
         
-		except rospy.ServiceException, e:
+        except rospy.ServiceException, e:
             print("Service call failed:\n", e)
 
     """
@@ -85,6 +100,7 @@ class Turtlebot():
         self.pose.position = Point(pos[0], pos[1], pos[2])        
         orientation = Quaternion(quaternion[0], quaternion[1], quaternion[2], quaternion[3])        
         self.pose.orientation.z = tf.transformations.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
+        self.startIsSet = True
 
     """
     A helper for publishing Twist messages
