@@ -77,8 +77,7 @@ class Turtlebot():
         waypoints = []
         for poseStamped in path.poses: # reverse waypoints into correct order
             waypoints.insert(0, poseStamped.pose)        
-        for pose in waypoints[1:]: # first way point is current position, ignore
-            print("Moving to next pose", pose)
+        for pose in waypoints[1:]: # first way point is current position, ignore            
             self.nav_to_pose(pose)
 
     """

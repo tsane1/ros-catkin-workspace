@@ -36,7 +36,7 @@ class AStarServiceServer():
 
     # run A* algorithm and return fields
     def handleAStar(self, msg):
-        self.readOccupancyGridMap(msg.map)  
+        self.readOccupancyGridMap(msg.map)        
         self.frameID = msg.frameID.data      
         waypointArray = self.aStar(msg.start.position.x, msg.start.position.y, msg.goal.position.x, msg.goal.position.y)
         waypoints = self.calculateWaypoints(waypointArray)        

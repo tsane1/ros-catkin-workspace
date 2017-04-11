@@ -12,6 +12,9 @@ from std_msgs.msg import String
 from nav_msgs.msg import OccupancyGrid, Path
 from geometry_msgs.msg import Point, Pose, Quaternion, PoseStamped, PointStamped
 from tsane_mmlamare_mwpiazza_lab4.srv import *
+import padding
+
+PADDING = .2 # meters
 
 # ROS node 
 class AStarServiceClient():
@@ -23,6 +26,7 @@ class AStarServiceClient():
         self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEnd, queue_size=1) # Callback function to load map on initial load
         self.pubEnd = rospy.Publisher('/endPoint', PointStamped, queue_size=10)      
         self.pubWaypoints = rospy.Publisher('/waypoints', Path, queue_size=10)     
+        self.pubExpanded = rospy.Publisher('/expanded', OccupancyGrid, queue_size=10)     
         self._odom_list = tf.TransformListener() # Get the robot's Odometry
         rospy.Timer(rospy.Duration(.1), self.monitorOdometry)
 
@@ -42,9 +46,22 @@ class AStarServiceClient():
         self.startPose.orientation = Quaternion(quaternion[0], quaternion[1], quaternion[2], quaternion[3])
         self.startIsSet = True
 
-    # save grid as an attribute to send in service
-    def saveOccupancyGrid(self, grid):
-        self.map = grid    
+    # expands obstacles and save grid for future use
+    def saveOccupancyGrid(self, grid):         
+        self.map = padding.dilateByK(grid, PADDING) 
+        print("map updated with padding")    
+        self.pubExpanded.publish(self.map)  
+
+    # creates map of A* nodes given an occupancy grid
+    def sendExpandedGridToRviz(self, occupancyMatrix):  
+        self.starMap = [[None for col in range(len(occupancyMatrix[row]))] for row in range(len(occupancyMatrix))]  
+        for row in range(len(occupancyMatrix)):
+            for col in range(len(occupancyMatrix[row])):
+                if occupancyMatrix[row][col] != -1:
+                    x = (col*self.resolution) + self.origin.position.x + self.resolution/2.0
+                    y = (row*self.resolution) + self.origin.position.y + self.resolution/2.0
+                    isWall = occupancyMatrix[row][col] == 100                
+                    self.starMap[row][col] = StarNode(x, y, isWall, row, col)         
 
     # sets end of A* based on Publish Point
     def setEnd(self, poseStampedMsg):        
@@ -64,7 +81,7 @@ class AStarServiceClient():
             response = aStarService(self.frameID, self.map, self.startPose, self.goalPose)
             self.pubWaypoints.publish(response.waypoints) 
         except rospy.ServiceException, e:
-            print "Service call failed: %s"%e      
+            print("Service call failed:\n", e)
 
     # create PointStamped message given x and y
     def createPointStamped(self, x, y):   
