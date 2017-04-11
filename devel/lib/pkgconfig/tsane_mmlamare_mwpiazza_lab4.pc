@@ -3,6 +3,6 @@ prefix=/home/tsane/Documents/ros-catkin-workspace/devel
 Name: tsane_mmlamare_mwpiazza_lab4
 Description: Description of tsane_mmlamare_mwpiazza_lab4
 Version: 0.0.0
-Cflags: 
+Cflags: -I/home/tsane/Documents/ros-catkin-workspace/devel/include
 Libs: -L/home/tsane/Documents/ros-catkin-workspace/devel/lib 
 Requires: 

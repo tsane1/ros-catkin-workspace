@@ -127,7 +127,7 @@ class Turtlebot():
 
                 if abs(theta_remaining) <= 0.3:        # Turned the necessary angle within error
                     arrived = True
-                    self.publish_twist(0, 0)                # STOP!
+                    self.publish_twist(0, 0)           # STOP!
                 else:
                     self.publish_twist(0, w_robot)
 
@@ -142,12 +142,12 @@ class Turtlebot():
         y_f = goal.position.y
     
         theta_g = abs(math.atan2((y_f - y_o), (x_f - x_o)) - theta_o)        # angle between current orientation and new position
-        d_t = math.sqrt((x_f - x_o) ** 2 + (y_f - y_o) ** 2)                        # how far to go in that direction
+        d_t = math.sqrt((x_f - x_o) ** 2 + (y_f - y_o) ** 2)                 # how far to go in that direction
         
         dummy = goal.orientation
-        q = [dummy.x, dummy.y, dummy.z, dummy.w]                                                # put the angular quaternion into a list
+        q = [dummy.x, dummy.y, dummy.z, dummy.w]                             # put the angular quaternion into a list
         roll, pitch, yaw = euler_from_quaternion(q)
-        theta_f = yaw - (theta_g + theta_o)                                                            # complete the turn to face the specified pose    
+        theta_f = yaw - (theta_g + theta_o)                                  # complete the turn to face the specified pose    
 
         self.rotate(theta_g)
         self.drive_straight(0.25, d_t)
