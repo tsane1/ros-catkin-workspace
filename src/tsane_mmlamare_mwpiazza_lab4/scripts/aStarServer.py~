@@ -36,7 +36,6 @@ class AStarServiceServer():
 
     # run A* algorithm and return fields
     def handleAStar(self, msg):
-	#TODO: Implement tolerance for being at goal
         self.readOccupancyGridMap(msg.map)        
         self.frameID = msg.frameID.data      
         waypointArray = self.aStar(msg.start.position.x, msg.start.position.y, msg.goal.position.x, msg.goal.position.y)

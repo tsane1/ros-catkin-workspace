@@ -39,13 +39,42 @@ class Turtlebot():
         self.pose = Pose()
         self.odometry = tf.TransformListener()
         rospy.Timer(rospy.Duration(.1), self.monitorOdometry)
+		rospy.Timer
 
         # Publishers
         self.driver = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size = 10)
+		self.pubWaypoints = rospy.Publisher('/waypoints', Path, queue_size=10)
         
         # Subscribers            
         self.nav = rospy.Subscriber('/waypoints', Path, self.navigate)
+		self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEnd, queue_size=1)
+
         rospy.spin()
+	
+	"""
+	Helper function to call A* with proper poses
+	"""
+	def setEnd(self, poseStampedMsg):
+        self.goalPose = poseStampedMsg.pose
+        self.endIsSet = True        
+        if self.startIsSet and self.endIsSet:
+            self.callAStar() 
+        else:
+            print("Robot odometry unread")
+
+
+	"""
+	Asks the AStarService for a new plan	
+	"""
+	def callAStar(self):
+		rospy.wait_for_service('a_star')
+		try:
+        	aStarService = rospy.ServiceProxy('a_star', AStar)            
+            response = aStarService(self.frameID, self.map, self.pose, self.goalPose)
+            self.pubWaypoints.publish(response.waypoints) 
+        
+		except rospy.ServiceException, e:
+            print("Service call failed:\n", e)
 
     """
     Read the robot's current position
