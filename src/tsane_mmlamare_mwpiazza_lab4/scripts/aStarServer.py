@@ -181,7 +181,7 @@ class AStarServiceServer():
         		delta = newDelta
         		prevNode = currentNode 
         	waypoints.poses.append(self.createPoseStamped(prevNode.x, prevNode.y, math.atan2(delta[1], delta[0])))
-        	print("Path found, here ya go!")
+        	print("Got a path, here ya go!")
     	return waypoints
 
     # create PoseStamped message given x, y, and radian orientation

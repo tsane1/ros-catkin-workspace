@@ -28,7 +28,7 @@ class AStarServiceClient():
 
         # set up control parameters        
         self.frameID = String()
-        self.frameID.data = "map"         
+        self.frameID.data = "map"       
         self.startIsSet = False
         self.endIsSet = False   
         rospy.spin()
@@ -52,9 +52,9 @@ class AStarServiceClient():
         self.pubEnd.publish(self.createPointStamped(self.goalPose.position.x, self.goalPose.position.y)) # send to RViz
         self.endIsSet = True        
         if self.startIsSet and self.endIsSet:
-        	self.callAStar() 
+            self.callAStar() 
         else:
-        	print("Robot odometry unread")
+            print("Robot odometry unread")
 
     # run A* algorithm and send grid cells to RViz
     def callAStar(self):
@@ -62,12 +62,11 @@ class AStarServiceClient():
         try:
             aStarService = rospy.ServiceProxy('a_star', AStar)            
             response = aStarService(self.frameID, self.map, self.startPose, self.goalPose)
-            self.pubWaypoints.publish(response.waypoints)       
-
+            self.pubWaypoints.publish(response.waypoints) 
         except rospy.ServiceException, e:
-            print "Service call failed: %s"%e  	    	
+            print "Service call failed: %s"%e      
 
-	# create PointStamped message given x and y
+    # create PointStamped message given x and y
     def createPointStamped(self, x, y):   
         point = PointStamped()
         point.header.seq = 1

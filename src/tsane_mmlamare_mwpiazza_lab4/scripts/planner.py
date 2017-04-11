@@ -245,7 +245,7 @@ if __name__ == '__main__':
 	while asyncOccupancyGrid.is_locked():
 		continue
 	
-	print 'Map data recieved! Starting service...'
+	print 'Map data received! Starting service...'
 	# Start service
 	planner = rospy.Service('path_planner', GetPlan, get_path)
 	planner.spin()
