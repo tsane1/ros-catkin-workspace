@@ -35,7 +35,8 @@ class AStarServiceClient():
 
     # expands obstacles and save grid for future use
     def saveOccupancyGrid(self, grid):         
-        self.map = padding.dilateByK(grid, PADDING)             
+        self.map = padding.dilateByK(grid, PADDING) 
+            
 
     # sets end of A* based on Publish Point
     def setEnd(self, poseStampedMsg):      

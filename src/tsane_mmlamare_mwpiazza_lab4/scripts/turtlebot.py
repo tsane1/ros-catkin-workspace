@@ -45,7 +45,7 @@ class Turtlebot():
         self.endIsSet = False
         self.pose = Pose()
 
-	self.map = OccupancyGrid()
+        self.map = OccupancyGrid()
 
         # Publishers
         self.driver = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=10)
