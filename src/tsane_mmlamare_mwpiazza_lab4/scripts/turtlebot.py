@@ -23,6 +23,9 @@ from geometry_msgs.msg import Twist, Pose, Point, PoseStamped, Quaternion
 from tf.transformations import euler_from_quaternion
 from tsane_mmlamare_mwpiazza_lab4.srv import *
 
+REPLAN_RATE = 2 # seconds
+ODOM_RATE = .1 # seconds
+
 """
 Encapsulation of a Turtlebot with necessary functionality
 """
@@ -41,6 +44,7 @@ class Turtlebot():
 
         # State
         self.mapIsSet = False
+        self.costMapIsSet = False
         self.startIsSet = False
         self.endIsSet = False
         self.pose = Pose()
@@ -53,12 +57,13 @@ class Turtlebot():
         
         # Subscribers            
         self.subMap = rospy.Subscriber("/expanded", OccupancyGrid, self.saveMap, queue_size=1)
+        self.subCostMap = rospy.Subscriber("/move_base/global_costmap/costmap", OccupancyGrid, self.saveCostMap, queue_size=1)
         self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEnd, queue_size=1)
 
         # Timers
         self.odometry = tf.TransformListener()
-        rospy.Timer(rospy.Duration(.1), self.monitorOdometry)
-        rospy.Timer(rospy.Duration(5), self.replanPath) 
+        rospy.Timer(rospy.Duration(ODOM_RATE), self.monitorOdometry)
+        rospy.Timer(rospy.Duration(REPLAN_RATE), self.replanPath) 
 
         rospy.spin()
     
@@ -70,6 +75,13 @@ class Turtlebot():
         self.mapIsSet = True
 
     """
+    Helper function to save costmap to class
+    """
+    def saveCostMap(self, grid):
+        self.costMap = grid
+        self.costMapIsSet = True
+
+    """
     Helper function to call A* with proper poses
     """
     def setEnd(self, poseStampedMsg):
@@ -77,7 +89,7 @@ class Turtlebot():
         self.endIsSet = True
 
     def replanPath(self, timerEvent):
-        if self.startIsSet and self.mapIsSet and self.endIsSet:
+        if self.startIsSet and self.mapIsSet and self.endIsSet and self.costMapIsSet:
             self.callAStar()
         elif not self.startIsSet or not self.endIsSet:
             print("Endpoints not set")
@@ -90,8 +102,8 @@ class Turtlebot():
     def callAStar(self):
         rospy.wait_for_service('a_star')
         try:
-            aStarService = rospy.ServiceProxy('a_star', AStar)            
-            response = aStarService(self.frameID, self.map, self.pose, self.goalPose)
+            aStarService = rospy.ServiceProxy('a_star', AStar)                    
+            response = aStarService(self.frameID, self.map, self.costMap, self.pose, self.goalPose)
             self.pubWaypoints.publish(response.waypoints)
             self.navigate(response.waypoints)
         
@@ -130,7 +142,8 @@ class Turtlebot():
         for poseStamped in path.poses: # reverse waypoints into correct order
             waypoints.insert(0, poseStamped.pose)        
         for pose in waypoints[1:]: # first way point is current position, ignore            
-            self.nav_to_pose(pose)
+            pass
+            #self.nav_to_pose(pose)
 
     """
     Drivers

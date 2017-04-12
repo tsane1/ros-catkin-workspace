@@ -14,10 +14,11 @@ from geometry_msgs.msg import Point, PoseStamped
 from tsane_mmlamare_mwpiazza_lab4.srv import *
 
 Z_AXIS = (0, 0, 1)
+TOLERANCE = .5 # meters
 
 # A* Map Point 
 class StarNode():
-    def __init__(self, x, y, isWall, row, col):
+    def __init__(self, x, y, isWall, row, col, heuristicCost):
         self.x = x
         self.y = y            
         self.isWall = isWall
@@ -25,6 +26,7 @@ class StarNode():
         self.col = col    
         self.knownCost = -1
         self.predictedCost = -1
+        self.heuristicCost = heuristicCost
 
 # ROS node 
 class AStarServiceServer():
@@ -32,34 +34,45 @@ class AStarServiceServer():
     def __init__(self):        	    
         rospy.init_node('a_star_server_apo')
         s = rospy.Service('a_star', AStar, self.handleAStar)
+        self.frameID = "map"
         rospy.spin()                    
 
     # run A* algorithm and return fields
     def handleAStar(self, msg):
-	#TODO: Implement tolerance for being at goal
-        self.readOccupancyGridMap(msg.map)        
-        self.frameID = msg.frameID.data      
-        waypointArray = self.aStar(msg.start.position.x, msg.start.position.y, msg.goal.position.x, msg.goal.position.y)
+        waypointArray = []
+        if self.distance(msg.start.position, msg.goal.position) > TOLERANCE:
+            self.readOccupancyGridMaps(msg.map, msg.costMap)        
+            self.frameID = msg.frameID.data      
+            waypointArray = self.aStar(msg.start.position.x, msg.start.position.y, msg.goal.position.x, msg.goal.position.y)
+        else:
+            print("A* Goal Reached!")
         waypoints = self.calculateWaypoints(waypointArray)        
         return AStarResponse(waypoints)
 
+    # estimates distance between two nodes
+    def distance(self, currentPoint, goalPoint):     
+        diffX = abs(currentPoint.x - goalPoint.x)
+        diffY = abs(currentPoint.y - goalPoint.y)                
+        return math.hypot(diffX, diffY) 
+
     # convert occupancy grid from RViz to 2D matrix map of StarNodes
-    def readOccupancyGridMap(self, map):        
-        mapRows = map.info.height
-        mapColumns = map.info.width
-        self.resolution = map.info.resolution        
-        self.origin = map.info.origin
+    def readOccupancyGridMaps(self, wallMap, costMap):        
+        mapRows = wallMap.info.height
+        mapColumns = wallMap.info.width
+        self.resolution = wallMap.info.resolution        
+        self.origin = wallMap.info.origin          
         
         # create map of nodes
-        grid = [[map.data[(row*mapColumns) + col] for col in range(mapColumns)] for row in range(mapRows)]  
+        grid = [[(wallMap.data[(row*mapColumns) + col], costMap.data[(row*mapColumns) + col]) for col in range(mapColumns)] for row in range(mapRows)]  
         self.starMap = [[None for col in range(len(grid[row]))] for row in range(len(grid))]  
         for row in range(len(grid)):
             for col in range(len(grid[row])):
-                if grid[row][col] != -1:
+                if grid[row][col][0] != -1:
                     x = (col*self.resolution) + self.origin.position.x + self.resolution/2.0
                     y = (row*self.resolution) + self.origin.position.y + self.resolution/2.0
-                    isWall = grid[row][col] == 100                
-                    self.starMap[row][col] = StarNode(x, y, isWall, row, col)        
+                    isWall = grid[row][col][0] == 100                
+                    cost = grid[row][col][1]
+                    self.starMap[row][col] = StarNode(x, y, isWall, row, col, cost)        
 
     # calculates best path between the set start and end nodes
     def aStar(self, startX, startY, goalX, goalY):
@@ -114,10 +127,12 @@ class AStarServiceServer():
         return None  
 
     # estimates distance between two nodes
-    def heuristic(self, current, goalNode):    	
-        diffX = abs(current.x - goalNode.x)
-        diffY = abs(current.y - goalNode.y)                
-        return math.hypot(diffX, diffY)        
+    def heuristic(self, currentNode, goalNode):    	
+        diffX = abs(currentNode.x - goalNode.x)
+        diffY = abs(currentNode.y - goalNode.y)        
+        distance = math.hypot(diffX, diffY)                
+        costFactor = currentNode.heuristicCost/100.0
+        return distance*costFactor
 
     # gets the node with the smallest known cost, assuming self.frontierNodes is not empty
     def getMinimumNode(self):        
