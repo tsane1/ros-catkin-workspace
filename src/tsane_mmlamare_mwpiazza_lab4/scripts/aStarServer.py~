@@ -190,7 +190,7 @@ class AStarServiceServer():
         pose = PoseStamped()
         pose.header.seq = 1
         pose.header.stamp = rospy.Time.now()
-        pose.header.frame_id = self.frameID
+        pose.header.frame_id = 'map'
         pose.pose.position.x = x
         pose.pose.position.y = y
         pose.pose.position.z = 0

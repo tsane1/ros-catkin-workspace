@@ -43,6 +43,7 @@ class AStarServiceClient():
 
     # updates map in RViz constantly
     def publishGrid(self, event):
+	print("publishing", self.map)
         self.pubExpanded.publish(self.map)
 
     # create PointStamped message given x and y

@@ -126,6 +126,7 @@ class Turtlebot():
     navigate with the given path
     """
     def navigate(self, path): 
+        print("navigating")
         waypoints = []
         for poseStamped in path.poses: # reverse waypoints into correct order
             waypoints.insert(0, poseStamped.pose)        
