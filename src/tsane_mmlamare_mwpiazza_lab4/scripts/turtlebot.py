@@ -23,8 +23,13 @@ from geometry_msgs.msg import Twist, Pose, Point, PoseStamped, Quaternion
 from tf.transformations import euler_from_quaternion
 from tsane_mmlamare_mwpiazza_lab4.srv import *
 
-REPLAN_RATE = 2 # seconds
+#REPLAN_RATE = 2 # seconds
 ODOM_RATE = .1 # seconds
+GOAL_TOLERANCE = .5 # meters
+STRAIGHT_SPEED = .2      # m/sec
+STRAIGHT_SPEED_FACTOR = 1    # multiplication factor to achieve m/sec units
+ROTATE_SPEED_FACTOR = .84       # multiplication factor to achieve rad/sec units
+ACCELERATION_FACTOR = .75
 
 """
 Encapsulation of a Turtlebot with necessary functionality
@@ -36,9 +41,9 @@ class Turtlebot():
     def __init__(self):
         rospy.init_node('turtlebot_apo')
 
-        # Kobuki base constants
-        self._r = 0.035        # wheel radius, m
-        self._L = 0.230        # wheelbase, m
+        # constants
+        self.spinWheelsInterval = 100000000 # .1 seconds
+        self.replanInterval = 5             # seconds
         self.frameID = String()
         self.frameID.data = "map" 
 
@@ -58,13 +63,11 @@ class Turtlebot():
         # Subscribers            
         self.subMap = rospy.Subscriber("/expanded", OccupancyGrid, self.saveMap, queue_size=1)
         self.subCostMap = rospy.Subscriber("/move_base/global_costmap/costmap", OccupancyGrid, self.saveCostMap, queue_size=1)
-        self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEnd, queue_size=1)
+        self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEndAndNav, queue_size=1)
 
         # Timers
         self.odometry = tf.TransformListener()
         rospy.Timer(rospy.Duration(ODOM_RATE), self.monitorOdometry)
-        rospy.Timer(rospy.Duration(REPLAN_RATE), self.replanPath) 
-
         rospy.spin()
     
     """
@@ -82,33 +85,17 @@ class Turtlebot():
         self.costMapIsSet = True
 
     """
-    Helper function to call A* with proper poses
+    Helper function to set goal and navigate to it using A*
     """
-    def setEnd(self, poseStampedMsg):
+    def setEndAndNav(self, poseStampedMsg):
         self.goalPose = poseStampedMsg.pose
         self.endIsSet = True
-
-    def replanPath(self, timerEvent):
         if self.startIsSet and self.mapIsSet and self.endIsSet and self.costMapIsSet:
-            self.callAStar()
+            self.navigate() 
         elif not self.startIsSet or not self.endIsSet:
-            print("Endpoints not set")
+            print("TURTLEBOT: Endpoints not set")
         else:
-            print("Map unknown")
-
-    """
-    Asks the AStarService for a new plan    
-    """
-    def callAStar(self):
-        rospy.wait_for_service('a_star')
-        try:
-            aStarService = rospy.ServiceProxy('a_star', AStar)                    
-            response = aStarService(self.frameID, self.map, self.costMap, self.pose, self.goalPose)
-            self.pubWaypoints.publish(response.waypoints)
-            self.navigate(response.waypoints)
-        
-        except rospy.ServiceException, e:
-            print("Service call failed:\n", e)
+            print("TURTLEBOT: Map unknown")   
 
     """
     Read the robot's current position
@@ -119,104 +106,166 @@ class Turtlebot():
         self.pose.position = Point(pos[0], pos[1], pos[2])        
         orientation = Quaternion(quaternion[0], quaternion[1], quaternion[2], quaternion[3])        
         self.pose.orientation.z = tf.transformations.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
-        self.startIsSet = True
+        self.startIsSet = True    
 
     """
-    A helper for publishing Twist messages
+    navigate along a path of waypoints to the set end goal pose
     """
-    def publish_twist(self, v_robot, w_robot):
-        global teleop_pub
-
-        # Build message
-        twist = Twist()
-        twist.linear.x = v_robot
-        twist.angular.z = w_robot
-
-        self.driver.publish(twist)
+    def navigate(self):               
+        while True:              
+            path = self.callAStar()            
+            self.lastNavTime = rospy.Time.now()
+            print("TURTLEBOT: Waypoints left to navigate:", len(path))
+            if path == []:
+                break 
+            for pose in path: 
+                self.navToPose(pose)
 
     """
-    navigate with the given path
+    Asks the AStarService for a new plan    
     """
-    def navigate(self, path): 
-        waypoints = []
-        for poseStamped in path.poses: # reverse waypoints into correct order
-            waypoints.insert(0, poseStamped.pose)        
-        for pose in waypoints[1:]: # first way point is current position, ignore            
-            pass
-            #self.nav_to_pose(pose)
+    def callAStar(self):
+        rospy.wait_for_service('a_star')
+        try:
+            aStarService = rospy.ServiceProxy('a_star', AStar)                            
+            response = aStarService(self.frameID, self.map, self.costMap, self.pose, self.goalPose)            
+            self.pubWaypoints.publish(response.waypoints)
+            
+            # reverse waypoints into correct order
+            path = []             
+            for poseStamped in response.waypoints.poses: 
+                path.insert(0, poseStamped.pose)  
+            return path[1:]
+        
+        except rospy.ServiceException, e:
+            print("TURTLEBOT: Service call failed:\n", e)
+
+    """
+    drive to a goal subscribed as /move_base_simple/navPose
+    """
+    def navToPose(self, goal):        
+        # Inverse Kinematics        
+        finalAngle = tf.transformations.euler_from_quaternion([goal.orientation.x, goal.orientation.y, goal.orientation.z, goal.orientation.w])[2]    
+        xDiff = goal.position.x - self.pose.position.x
+        yDiff = goal.position.y - self.pose.position.y      
+        preturnAngle = math.atan2(yDiff, xDiff)
+        dist = math.hypot(xDiff, yDiff)         
+        # execute move       
+        if dist > GOAL_TOLERANCE:
+            self.rotateTo(preturnAngle)     # rotate towards goal
+            self.driveStraightBy(STRAIGHT_SPEED, dist)  # move to goal
+            self.rotateTo(finalAngle)       # rotate towards final orientation           
 
     """
     Drivers
     """
-    def drive_straight(self, speed, distance):
-        # Get starting location
-        x_o = self.pose.position.x
-        y_o = self.pose.position.y
 
-        # Arrival flag - True when the robot has traveled the distance
-        arrived = False
-    
-        while not arrived and not rospy.is_shutdown():
-            # Get instantaneous position
-            x_t = self.pose.position.x
-            y_t = self.pose.position.y
+    """
+    Accepts an orientation angle and makes the robot rotate to it.
+    """
+    def rotateTo(self, angle):
+        if (angle < math.pi and angle > -math.pi): # if angle in valid bounds
+            # find necessary change in angle to turn by
+            deltaAngle = self.pose.orientation.z - angle 
+            deltaAngle = deltaAngle + 2*math.pi if (deltaAngle < -math.pi) else deltaAngle
+            deltaAngle = deltaAngle - 2*math.pi if (deltaAngle > math.pi) else deltaAngle 
+            self.rotateBy(deltaAngle)  
+        else: # angle not valid
+            print("TURTLEBOT: Angle not within PI to negative PI bounds")
 
-            d_t = math.sqrt((x_t - x_o) ** 2 + (y_t - y_o) ** 2)
+    """
+    Accepts a speed and a distance for the robot to move in a straight line
+    """
+    def driveStraightBy(self, speed, distance):        
+        time = distance*STRAIGHT_SPEED_FACTOR/float(speed)
+        """
+        # accelerate
+        for factor in [.25, .5, .75]: # 3 part acceleration before reaching full power 
+            self.spinWheels(speed*factor, speed*factor, time/12.0)
+        # normal movement
+        self.spinWheels(speed, speed, time*ACCELERATION_FACTOR)        
+        # decelerate
+        for factor in [.75, .5, .25]: # 3 part deceleration before stopping
+            self.spinWheels(speed*factor, speed*factor, time/12.0)
+        """ 
+        self.spinWheels(speed, speed, time)
 
-            if d_t >= distance:                        # Traveled the necessary distance
-                arrived = True
-                self.publish_twist(0, 0)        # STOP!
-            else:
-                self.publish_twist(speed, 0)
-    
-    def rotate(self, angle):
-            # Set wheel speeds
-            w_right = (angle / abs(angle)) * 5        # randomly chosen wheelspeed of 5 rad/sec
-            w_left = -1 * w_right
+    """
+    Accepts an angle and makes the robot rotate by that amount.
+    """
+    def rotateBy(self, angle): 
+        speed = ROTATE_SPEED_FACTOR if angle > 0 else -ROTATE_SPEED_FACTOR        
+        seconds = abs(angle*math.pi/2.0) # turn 90 degrees per second              
+        self.spinWheels(-speed, speed, seconds)
 
-            # Forward velocity kinematics
-            w_robot = (self._r / self._L) * (w_right - w_left)
+    """
+    Converts wheel velocities and time into control commands for the robot
+    """
+    def spinWheels(self, velLeft, velRight, time):
+        timeSec = time//1   
+        timeNSec = (time-timeSec)*1000000000
+        spinTimePassed = False
+        timeStart = rospy.Time.now()
+        timeLastUpdate = timeStart        
+        # check for replanning timeout and finishing single rotation
+        while not self.hasSecIntervalPassed(self.lastNavTime, self.replanInterval) and not spinTimePassed:
+            if self.hasNSecIntervalPassed(timeLastUpdate, self.spinWheelsInterval):  
+                # rotate           
+                linear, angular = self.convertLinAng(velLeft, velRight)
+                self.publishTwist(linear, angular)   
+                timeLastUpdate = rospy.Time.now()        
+                # check for finishing single rotation
+                secPassed = self.hasSecIntervalPassed(timeStart, timeSec)
+                nsecPassed = self.hasNSecIntervalPassed(timeStart, timeNSec)            
+                spinTimePassed = secPassed and nsecPassed    
+        if self.hasSecIntervalPassed(self.lastNavTime, self.replanInterval):
+            print("Replanning timeout")                
 
-            # Get the initial angle
-            theta_o = self.pose.orientation.z
-    
-            # Arrival flag - True when robot has turned the proper amount
-            arrived = False
+    """
+    Converts wheel velocities to linear and angular commands
+    """
+    def convertLinAng(self, velLeft, velRight):
+        linear = 0
+        angular = 0
+        if (velLeft == velRight): # move straight
+            linear = velLeft
+        elif (velLeft == -velRight): # rotate
+            angular = velLeft        
+        return linear, angular   
 
-            while not arrived and not rospy.is_shutdown():
-                # Get instantaneous angle
-                theta_t = self.pose.orientation.z
-    
-                theta_turnt = abs(theta_t - theta_o)
-                theta_remaining = abs(angle) - theta_turnt
+    """
+    Returns whether the given number of seconds have passed
+    """
+    def hasSecIntervalPassed(self, lastUpdate, intervalSec):
+        currentTime = rospy.Time.now()
+        secElapsed = currentTime.secs - lastUpdate.secs
+        nsecElapsed = currentTime.nsecs - lastUpdate.nsecs        
+        if nsecElapsed < 0:
+            secElapsed -= 1        
+        return secElapsed > intervalSec
 
-                if abs(theta_remaining) <= 0.3:        # Turned the necessary angle within error
-                    arrived = True
-                    self.publish_twist(0, 0)           # STOP!
-                else:
-                    self.publish_twist(0, w_robot)
+    """
+    Returns whether the given number of nanoseconds have passed.
+    Works for periods less than one second
+    """
+    def hasNSecIntervalPassed(self, lastUpdate, intervalNSec):
+        currentTime = rospy.Time.now()
+        secElapsed = currentTime.secs - lastUpdate.secs
+        nsecElapsed = currentTime.nsecs - lastUpdate.nsecs
+        if nsecElapsed < 0:
+            secElapsed -= 1
+            nsecElapsed += 1000000000
+        return nsecElapsed > intervalNSec
 
-    def nav_to_pose(self, goal):        
-        # Get current data
-        x_o = self.pose.position.x
-        y_o = self.pose.position.y
-        theta_o = self.pose.orientation.z
-    
-        # Get goal data
-        x_f = goal.position.x
-        y_f = goal.position.y
-    
-        theta_g = abs(math.atan2((y_f - y_o), (x_f - x_o)) - theta_o)        # angle between current orientation and new position
-        d_t = math.sqrt((x_f - x_o) ** 2 + (y_f - y_o) ** 2)                 # how far to go in that direction
-        
-        dummy = goal.orientation
-        q = [dummy.x, dummy.y, dummy.z, dummy.w]                             # put the angular quaternion into a list
-        roll, pitch, yaw = euler_from_quaternion(q)
-        theta_f = yaw - (theta_g + theta_o)                                  # complete the turn to face the specified pose    
-
-        self.rotate(theta_g)
-        self.drive_straight(0.25, d_t)
-        self.rotate(theta_f)
+    """
+    A helper for publishing Twist messages
+    """
+    def publishTwist(self, linear, angular):
+        twist = Twist()
+        twist.linear.x = linear
+        twist.angular.z = angular
+        self.driver.publish(twist)
+                    
 
 # The program's primary executing section
 if __name__ == '__main__':    

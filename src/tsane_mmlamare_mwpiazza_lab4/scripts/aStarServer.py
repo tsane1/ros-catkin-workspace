@@ -45,7 +45,7 @@ class AStarServiceServer():
             self.frameID = msg.frameID.data      
             waypointArray = self.aStar(msg.start.position.x, msg.start.position.y, msg.goal.position.x, msg.goal.position.y)
         else:
-            print("A* Goal Reached!")
+            print("A* Server: Goal Reached!")
         waypoints = self.calculateWaypoints(waypointArray)        
         return AStarResponse(waypoints)
 
@@ -111,7 +111,7 @@ class AStarServiceServer():
 	                neighborNode.knownCost = neighborKnownCost
 	                neighborNode.predictedCost = neighborNode.knownCost + self.heuristic(neighborNode, goalNode)
 
-        print("A* could not find a path :( ")
+        print("A* Server: Could not find a path :( ")
         return []
 
      # finds center of grid cell containing coordinate
@@ -123,7 +123,7 @@ class AStarServiceServer():
                     withinCellBounds = withinCellBounds and abs(y - self.starMap[row][col].y) < self.resolution/2.0
                     if withinCellBounds:
                         return self.starMap[row][col]
-        print("No grid cell found containing given point")
+        print("A* Server: No grid cell found containing given point")
         return None  
 
     # estimates distance between two nodes
@@ -131,7 +131,7 @@ class AStarServiceServer():
         diffX = abs(currentNode.x - goalNode.x)
         diffY = abs(currentNode.y - goalNode.y)        
         distance = math.hypot(diffX, diffY)                
-        costFactor = currentNode.heuristicCost/100.0
+        costFactor = .1 + 9*currentNode.heuristicCost/1000.0
         return distance*costFactor
 
     # gets the node with the smallest known cost, assuming self.frontierNodes is not empty
@@ -197,7 +197,7 @@ class AStarServiceServer():
         		delta = newDelta
         		prevNode = currentNode 
         	waypoints.poses.append(self.createPoseStamped(prevNode.x, prevNode.y, math.atan2(delta[1], delta[0])))
-        	print("Got a path, here ya go!")
+        	print("A* Server: Got a path, here ya go!")
     	return waypoints
 
     # create PoseStamped message given x, y, and radian orientation
