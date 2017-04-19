@@ -29,7 +29,7 @@ GOAL_TOLERANCE = .5            # meters
 ROTATE_TOLERANCE = .1          # radians
 STRAIGHT_SPEED = .15           # m/sec
 STRAIGHT_BUFFER = .05          # number of cms to stop early
-ROTATE_SPEED = 1               # rad/sec
+ROTATE_SPEED = .5              # rad/sec
 ACCELERATION_FACTOR = .75
 
 """
@@ -44,7 +44,7 @@ class Turtlebot():
 
         # constants
         self.spinWheelsInterval = .01 # seconds
-        self.replanInterval = 5       # seconds
+        self.replanInterval = 10      # seconds
         self.frameID = String()
         self.frameID.data = "map" 
 
@@ -62,19 +62,15 @@ class Turtlebot():
         self.pubWaypoints = rospy.Publisher('/waypoints', Path, queue_size=10)
         
         # Subscribers            
-        #self.subMap = rospy.Subscriber("/expanded", OccupancyGrid, self.saveMap, queue_size=1)
-        #self.subCostMap = rospy.Subscriber("/move_base/global_costmap/costmap", OccupancyGrid, self.saveCostMap, queue_size=1)
-        #self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEndAndNav, queue_size=1)
+        self.subMap = rospy.Subscriber("/expanded", OccupancyGrid, self.saveMap, queue_size=1)
+        self.subCostMap = rospy.Subscriber("/move_base/global_costmap/costmap", OccupancyGrid, self.saveCostMap, queue_size=1)
+        self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEndAndNav, queue_size=1)
 
         # Timers
         self.odometry = tf.TransformListener()
         rospy.Timer(rospy.Duration(ODOM_RATE), self.monitorOdometry)
         rospy.sleep(rospy.Duration(1, 0)) # wait for a moment to set pose
-
-        self.replanInterval = 10             # seconds                
-        self.driveStraightBy(1.6)
-
-        #rospy.spin()
+        rospy.spin()
     
     """
     Helper function to save expanded obstacle map to class
@@ -159,7 +155,7 @@ class Turtlebot():
         # execute move       
         if dist > GOAL_TOLERANCE:
             self.rotateTo(preturnAngle)     # rotate towards goal
-            self.driveStraightBy(STRAIGHT_SPEED, dist)  # move to goal
+            self.driveStraightBy(dist)  # move to goal
             self.rotateTo(finalAngle)       # rotate towards final orientation           
 
     """
