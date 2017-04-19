@@ -1,8 +1,8 @@
-# Install script for directory: /home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_lab3
+# Install script for directory: /home/tsane/Ros_ws/src/tsane_mmlamare_lab3
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  SET(CMAKE_INSTALL_PREFIX "/home/tsane/Documents/ros-catkin-workspace/install")
+  SET(CMAKE_INSTALL_PREFIX "/home/tsane/Ros_ws/install")
 ENDIF(NOT DEFINED CMAKE_INSTALL_PREFIX)
 STRING(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -33,17 +33,17 @@ IF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 ENDIF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_lab3/catkin_generated/installspace/tsane_mmlamare_lab3.pc")
+  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/tsane/Ros_ws/build/tsane_mmlamare_lab3/catkin_generated/installspace/tsane_mmlamare_lab3.pc")
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
   FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tsane_mmlamare_lab3/cmake" TYPE FILE FILES
-    "/home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_lab3/catkin_generated/installspace/tsane_mmlamare_lab3Config.cmake"
-    "/home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_lab3/catkin_generated/installspace/tsane_mmlamare_lab3Config-version.cmake"
+    "/home/tsane/Ros_ws/build/tsane_mmlamare_lab3/catkin_generated/installspace/tsane_mmlamare_lab3Config.cmake"
+    "/home/tsane/Ros_ws/build/tsane_mmlamare_lab3/catkin_generated/installspace/tsane_mmlamare_lab3Config-version.cmake"
     )
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tsane_mmlamare_lab3" TYPE FILE FILES "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_lab3/package.xml")
+  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tsane_mmlamare_lab3" TYPE FILE FILES "/home/tsane/Ros_ws/src/tsane_mmlamare_lab3/package.xml")
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 

@@ -40,7 +40,7 @@ template<>
 struct MD5Sum< ::tsane_mmlamare_mwpiazza_lab4::AStar > {
   static const char* value()
   {
-    return "0f4d092bfab119cf1d1b92358660b2cf";
+    return "0e3cd40f90d5ac4d7658bc4cfa360931";
   }
 
   static const char* value(const ::tsane_mmlamare_mwpiazza_lab4::AStar&) { return value(); }

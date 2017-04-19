@@ -29,6 +29,7 @@ struct AStarResponse_
     }
   AStarResponse_(const ContainerAllocator& _alloc)
     : waypoints(_alloc)  {
+  (void)_alloc;
     }
 
 
@@ -212,7 +213,7 @@ namespace serialization
       stream.next(m.waypoints);
     }
 
-    ROS_DECLARE_ALLINONE_SERIALIZER;
+    ROS_DECLARE_ALLINONE_SERIALIZER
   }; // struct AStarResponse_
 
 } // namespace serialization

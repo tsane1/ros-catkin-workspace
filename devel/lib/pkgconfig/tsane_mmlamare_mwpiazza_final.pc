@@ -1,0 +1,8 @@
+prefix=/home/tsane/Ros_ws/devel
+
+Name: tsane_mmlamare_mwpiazza_final
+Description: Description of tsane_mmlamare_mwpiazza_final
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/tsane/Ros_ws/devel/lib 
+Requires: 

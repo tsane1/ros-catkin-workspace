@@ -1,7 +1,7 @@
 # generated from genmsg/cmake/pkg-genmsg.context.in
 
 messages_str = ""
-services_str = "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv"
+services_str = "/home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv"
 pkg_name = "tsane_mmlamare_mwpiazza_lab4"
 dependencies_str = "std_msgs;nav_msgs;geometry_msgs"
 langs = "gencpp;genlisp;genpy"

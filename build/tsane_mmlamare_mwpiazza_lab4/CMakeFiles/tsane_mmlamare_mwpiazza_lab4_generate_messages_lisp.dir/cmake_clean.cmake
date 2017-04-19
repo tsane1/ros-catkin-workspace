@@ -1,6 +1,6 @@
 FILE(REMOVE_RECURSE
   "CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_lisp"
-  "/home/tsane/Documents/ros-catkin-workspace/devel/share/common-lisp/ros/tsane_mmlamare_mwpiazza_lab4/srv/AStar.lisp"
+  "/home/tsane/Ros_ws/devel/share/common-lisp/ros/tsane_mmlamare_mwpiazza_lab4/srv/AStar.lisp"
 )
 
 # Per-language clean rules from dependency scanning.

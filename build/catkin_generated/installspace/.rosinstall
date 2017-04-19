@@ -1,2 +1,2 @@
 - setup-file:
-    local-name: /home/tsane/Documents/ros-catkin-workspace/install/setup.sh
+    local-name: /home/tsane/Ros_ws/install/setup.sh

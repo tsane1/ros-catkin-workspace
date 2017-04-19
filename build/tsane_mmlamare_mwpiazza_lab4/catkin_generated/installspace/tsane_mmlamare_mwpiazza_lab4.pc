@@ -1,8 +1,8 @@
-prefix=/home/tsane/Documents/ros-catkin-workspace/install
+prefix=/home/tsane/Ros_ws/install
 
 Name: tsane_mmlamare_mwpiazza_lab4
 Description: Description of tsane_mmlamare_mwpiazza_lab4
 Version: 0.0.0
-Cflags: -I/home/tsane/Documents/ros-catkin-workspace/install/include
-Libs: -L/home/tsane/Documents/ros-catkin-workspace/install/lib 
+Cflags: -I/home/tsane/Ros_ws/install/include
+Libs: -L/home/tsane/Ros_ws/install/lib 
 Requires: 

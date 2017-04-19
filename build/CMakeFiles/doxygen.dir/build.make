@@ -35,10 +35,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/tsane/Documents/ros-catkin-workspace/src
+CMAKE_SOURCE_DIR = /home/tsane/Ros_ws/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/tsane/Documents/ros-catkin-workspace/build
+CMAKE_BINARY_DIR = /home/tsane/Ros_ws/build
 
 # Utility rule file for doxygen.
 
@@ -60,6 +60,6 @@ CMakeFiles/doxygen.dir/clean:
 .PHONY : CMakeFiles/doxygen.dir/clean
 
 CMakeFiles/doxygen.dir/depend:
-	cd /home/tsane/Documents/ros-catkin-workspace/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/tsane/Documents/ros-catkin-workspace/src /home/tsane/Documents/ros-catkin-workspace/src /home/tsane/Documents/ros-catkin-workspace/build /home/tsane/Documents/ros-catkin-workspace/build /home/tsane/Documents/ros-catkin-workspace/build/CMakeFiles/doxygen.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/tsane/Ros_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/tsane/Ros_ws/src /home/tsane/Ros_ws/src /home/tsane/Ros_ws/build /home/tsane/Ros_ws/build /home/tsane/Ros_ws/build/CMakeFiles/doxygen.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/doxygen.dir/depend
 

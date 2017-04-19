@@ -15,9 +15,9 @@ add_custom_target(tsane_mmlamare_mwpiazza_lab4_generate_messages ALL)
 
 
 
-get_filename_component(_filename "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv" NAME_WE)
+get_filename_component(_filename "/home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv" NAME_WE)
 add_custom_target(_tsane_mmlamare_mwpiazza_lab4_generate_messages_check_deps_${_filename}
-  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "tsane_mmlamare_mwpiazza_lab4" "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv" "geometry_msgs/Point:geometry_msgs/Quaternion:nav_msgs/Path:std_msgs/String:std_msgs/Header:nav_msgs/OccupancyGrid:geometry_msgs/PoseStamped:nav_msgs/MapMetaData:geometry_msgs/Pose"
+  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "tsane_mmlamare_mwpiazza_lab4" "/home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv" "geometry_msgs/Point:geometry_msgs/Quaternion:nav_msgs/Path:std_msgs/String:std_msgs/Header:nav_msgs/OccupancyGrid:geometry_msgs/PoseStamped:nav_msgs/MapMetaData:geometry_msgs/Pose"
 )
 
 #
@@ -29,7 +29,7 @@ add_custom_target(_tsane_mmlamare_mwpiazza_lab4_generate_messages_check_deps_${_
 
 ### Generating Services
 _generate_srv_cpp(tsane_mmlamare_mwpiazza_lab4
-  "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv"
+  "/home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv"
   "${MSG_I_FLAGS}"
   "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/indigo/share/nav_msgs/cmake/../msg/Path.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/String.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg;/opt/ros/indigo/share/nav_msgs/cmake/../msg/OccupancyGrid.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/nav_msgs/cmake/../msg/MapMetaData.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg"
   ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/tsane_mmlamare_mwpiazza_lab4
@@ -47,7 +47,7 @@ add_custom_target(tsane_mmlamare_mwpiazza_lab4_generate_messages_cpp
 add_dependencies(tsane_mmlamare_mwpiazza_lab4_generate_messages tsane_mmlamare_mwpiazza_lab4_generate_messages_cpp)
 
 # add dependencies to all check dependencies targets
-get_filename_component(_filename "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv" NAME_WE)
+get_filename_component(_filename "/home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv" NAME_WE)
 add_dependencies(tsane_mmlamare_mwpiazza_lab4_generate_messages_cpp _tsane_mmlamare_mwpiazza_lab4_generate_messages_check_deps_${_filename})
 
 # target for backward compatibility
@@ -62,7 +62,7 @@ list(APPEND ${PROJECT_NAME}_EXPORTED_TARGETS tsane_mmlamare_mwpiazza_lab4_genera
 
 ### Generating Services
 _generate_srv_lisp(tsane_mmlamare_mwpiazza_lab4
-  "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv"
+  "/home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv"
   "${MSG_I_FLAGS}"
   "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/indigo/share/nav_msgs/cmake/../msg/Path.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/String.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg;/opt/ros/indigo/share/nav_msgs/cmake/../msg/OccupancyGrid.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/nav_msgs/cmake/../msg/MapMetaData.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg"
   ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/tsane_mmlamare_mwpiazza_lab4
@@ -80,7 +80,7 @@ add_custom_target(tsane_mmlamare_mwpiazza_lab4_generate_messages_lisp
 add_dependencies(tsane_mmlamare_mwpiazza_lab4_generate_messages tsane_mmlamare_mwpiazza_lab4_generate_messages_lisp)
 
 # add dependencies to all check dependencies targets
-get_filename_component(_filename "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv" NAME_WE)
+get_filename_component(_filename "/home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv" NAME_WE)
 add_dependencies(tsane_mmlamare_mwpiazza_lab4_generate_messages_lisp _tsane_mmlamare_mwpiazza_lab4_generate_messages_check_deps_${_filename})
 
 # target for backward compatibility
@@ -95,7 +95,7 @@ list(APPEND ${PROJECT_NAME}_EXPORTED_TARGETS tsane_mmlamare_mwpiazza_lab4_genera
 
 ### Generating Services
 _generate_srv_py(tsane_mmlamare_mwpiazza_lab4
-  "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv"
+  "/home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv"
   "${MSG_I_FLAGS}"
   "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/indigo/share/nav_msgs/cmake/../msg/Path.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/String.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg;/opt/ros/indigo/share/nav_msgs/cmake/../msg/OccupancyGrid.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/nav_msgs/cmake/../msg/MapMetaData.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg"
   ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/tsane_mmlamare_mwpiazza_lab4
@@ -113,7 +113,7 @@ add_custom_target(tsane_mmlamare_mwpiazza_lab4_generate_messages_py
 add_dependencies(tsane_mmlamare_mwpiazza_lab4_generate_messages tsane_mmlamare_mwpiazza_lab4_generate_messages_py)
 
 # add dependencies to all check dependencies targets
-get_filename_component(_filename "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv" NAME_WE)
+get_filename_component(_filename "/home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv" NAME_WE)
 add_dependencies(tsane_mmlamare_mwpiazza_lab4_generate_messages_py _tsane_mmlamare_mwpiazza_lab4_generate_messages_check_deps_${_filename})
 
 # target for backward compatibility

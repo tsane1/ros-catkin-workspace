@@ -3,6 +3,8 @@
           FRAMEID
           MAP-VAL
           MAP
+          COSTMAP-VAL
+          COSTMAP
           START-VAL
           START
           GOAL-VAL

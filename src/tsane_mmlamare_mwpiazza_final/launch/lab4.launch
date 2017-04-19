@@ -1,0 +1,11 @@
+<!--
+  Used for visualising the turtlebot while building a map or navigating with the ros navistack.
+ -->
+<launch>    
+    <node name="rviz" pkg="rviz" type="rviz"/>  
+    <node name="rviz_ui_client" pkg="tsane_mmlamare_mwpiazza_lab4" type="rvizUI.py" output="screen"/>
+    <node name="a_star_server" pkg="tsane_mmlamare_mwpiazza_lab4" type="aStarServer.py" output="screen"/>
+    <!--
+    <node name="turtlebot_navigator" pkg="tsane_mmlamare_mwpiazza_lab4" type="turtlebot.py" output="screen"/>
+    -->
+</launch>

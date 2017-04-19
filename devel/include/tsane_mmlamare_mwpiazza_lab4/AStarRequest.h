@@ -17,6 +17,7 @@
 
 #include <std_msgs/String.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <nav_msgs/OccupancyGrid.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Pose.h>
 
@@ -30,14 +31,17 @@ struct AStarRequest_
   AStarRequest_()
     : frameID()
     , map()
+    , costMap()
     , start()
     , goal()  {
     }
   AStarRequest_(const ContainerAllocator& _alloc)
     : frameID(_alloc)
     , map(_alloc)
+    , costMap(_alloc)
     , start(_alloc)
     , goal(_alloc)  {
+  (void)_alloc;
     }
 
 
@@ -47,6 +51,9 @@ struct AStarRequest_
 
    typedef  ::nav_msgs::OccupancyGrid_<ContainerAllocator>  _map_type;
   _map_type map;
+
+   typedef  ::nav_msgs::OccupancyGrid_<ContainerAllocator>  _costMap_type;
+  _costMap_type costMap;
 
    typedef  ::geometry_msgs::Pose_<ContainerAllocator>  _start_type;
   _start_type start;
@@ -131,12 +138,12 @@ struct MD5Sum< ::tsane_mmlamare_mwpiazza_lab4::AStarRequest_<ContainerAllocator>
 {
   static const char* value()
   {
-    return "64879c28d46da9eca13d3b1a0ed147fc";
+    return "30fda3ecfd4c5cc89f0b7662815f5231";
   }
 
   static const char* value(const ::tsane_mmlamare_mwpiazza_lab4::AStarRequest_<ContainerAllocator>&) { return value(); }
-  static const uint64_t static_value1 = 0x64879c28d46da9ecULL;
-  static const uint64_t static_value2 = 0xa13d3b1a0ed147fcULL;
+  static const uint64_t static_value1 = 0x30fda3ecfd4c5cc8ULL;
+  static const uint64_t static_value2 = 0x9f0b7662815f5231ULL;
 };
 
 template<class ContainerAllocator>
@@ -157,6 +164,7 @@ struct Definition< ::tsane_mmlamare_mwpiazza_lab4::AStarRequest_<ContainerAlloca
   {
     return "std_msgs/String frameID\n\
 nav_msgs/OccupancyGrid map\n\
+nav_msgs/OccupancyGrid costMap\n\
 geometry_msgs/Pose start\n\
 geometry_msgs/Pose goal\n\
 \n\
@@ -252,11 +260,12 @@ namespace serialization
     {
       stream.next(m.frameID);
       stream.next(m.map);
+      stream.next(m.costMap);
       stream.next(m.start);
       stream.next(m.goal);
     }
 
-    ROS_DECLARE_ALLINONE_SERIALIZER;
+    ROS_DECLARE_ALLINONE_SERIALIZER
   }; // struct AStarRequest_
 
 } // namespace serialization
@@ -278,6 +287,9 @@ struct Printer< ::tsane_mmlamare_mwpiazza_lab4::AStarRequest_<ContainerAllocator
     s << indent << "map: ";
     s << std::endl;
     Printer< ::nav_msgs::OccupancyGrid_<ContainerAllocator> >::stream(s, indent + "  ", v.map);
+    s << indent << "costMap: ";
+    s << std::endl;
+    Printer< ::nav_msgs::OccupancyGrid_<ContainerAllocator> >::stream(s, indent + "  ", v.costMap);
     s << indent << "start: ";
     s << std::endl;
     Printer< ::geometry_msgs::Pose_<ContainerAllocator> >::stream(s, indent + "  ", v.start);

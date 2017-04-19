@@ -11,11 +11,12 @@ import genpy
 import std_msgs.msg
 
 class AStarRequest(genpy.Message):
-  _md5sum = "64879c28d46da9eca13d3b1a0ed147fc"
+  _md5sum = "30fda3ecfd4c5cc89f0b7662815f5231"
   _type = "tsane_mmlamare_mwpiazza_lab4/AStarRequest"
   _has_header = False #flag to mark the presence of a Header object
   _full_text = """std_msgs/String frameID
 nav_msgs/OccupancyGrid map
+nav_msgs/OccupancyGrid costMap
 geometry_msgs/Pose start
 geometry_msgs/Pose goal
 
@@ -91,10 +92,9 @@ float64 x
 float64 y
 float64 z
 float64 w
-
 """
-  __slots__ = ['frameID','map','start','goal']
-  _slot_types = ['std_msgs/String','nav_msgs/OccupancyGrid','geometry_msgs/Pose','geometry_msgs/Pose']
+  __slots__ = ['frameID','map','costMap','start','goal']
+  _slot_types = ['std_msgs/String','nav_msgs/OccupancyGrid','nav_msgs/OccupancyGrid','geometry_msgs/Pose','geometry_msgs/Pose']
 
   def __init__(self, *args, **kwds):
     """
@@ -104,7 +104,7 @@ float64 w
     changes.  You cannot mix in-order arguments and keyword arguments.
 
     The available fields are:
-       frameID,map,start,goal
+       frameID,map,costMap,start,goal
 
     :param args: complete set of field values, in .msg order
     :param kwds: use keyword arguments corresponding to message field names
@@ -117,6 +117,8 @@ float64 w
         self.frameID = std_msgs.msg.String()
       if self.map is None:
         self.map = nav_msgs.msg.OccupancyGrid()
+      if self.costMap is None:
+        self.costMap = nav_msgs.msg.OccupancyGrid()
       if self.start is None:
         self.start = geometry_msgs.msg.Pose()
       if self.goal is None:
@@ -124,6 +126,7 @@ float64 w
     else:
       self.frameID = std_msgs.msg.String()
       self.map = nav_msgs.msg.OccupancyGrid()
+      self.costMap = nav_msgs.msg.OccupancyGrid()
       self.start = geometry_msgs.msg.Pose()
       self.goal = geometry_msgs.msg.Pose()
 
@@ -166,9 +169,26 @@ float64 w
       pattern = '<%sb'%length
       buff.write(struct.pack(pattern, *self.map.data))
       _x = self
+      buff.write(_struct_3I.pack(_x.costMap.header.seq, _x.costMap.header.stamp.secs, _x.costMap.header.stamp.nsecs))
+      _x = self.costMap.header.frame_id
+      length = len(_x)
+      if python3 or type(_x) == unicode:
+        _x = _x.encode('utf-8')
+        length = len(_x)
+      if python3:
+        buff.write(struct.pack('<I%sB'%length, length, *_x))
+      else:
+        buff.write(struct.pack('<I%ss'%length, length, _x))
+      _x = self
+      buff.write(_struct_2If2I7d.pack(_x.costMap.info.map_load_time.secs, _x.costMap.info.map_load_time.nsecs, _x.costMap.info.resolution, _x.costMap.info.width, _x.costMap.info.height, _x.costMap.info.origin.position.x, _x.costMap.info.origin.position.y, _x.costMap.info.origin.position.z, _x.costMap.info.origin.orientation.x, _x.costMap.info.origin.orientation.y, _x.costMap.info.origin.orientation.z, _x.costMap.info.origin.orientation.w))
+      length = len(self.costMap.data)
+      buff.write(_struct_I.pack(length))
+      pattern = '<%sb'%length
+      buff.write(struct.pack(pattern, *self.costMap.data))
+      _x = self
       buff.write(_struct_14d.pack(_x.start.position.x, _x.start.position.y, _x.start.position.z, _x.start.orientation.x, _x.start.orientation.y, _x.start.orientation.z, _x.start.orientation.w, _x.goal.position.x, _x.goal.position.y, _x.goal.position.z, _x.goal.orientation.x, _x.goal.orientation.y, _x.goal.orientation.z, _x.goal.orientation.w))
-    except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(_x))))
-    except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(_x))))
+    except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
+    except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
   def deserialize(self, str):
     """
@@ -180,6 +200,8 @@ float64 w
         self.frameID = std_msgs.msg.String()
       if self.map is None:
         self.map = nav_msgs.msg.OccupancyGrid()
+      if self.costMap is None:
+        self.costMap = nav_msgs.msg.OccupancyGrid()
       if self.start is None:
         self.start = geometry_msgs.msg.Pose()
       if self.goal is None:
@@ -218,6 +240,30 @@ float64 w
       start = end
       end += struct.calcsize(pattern)
       self.map.data = struct.unpack(pattern, str[start:end])
+      _x = self
+      start = end
+      end += 12
+      (_x.costMap.header.seq, _x.costMap.header.stamp.secs, _x.costMap.header.stamp.nsecs,) = _struct_3I.unpack(str[start:end])
+      start = end
+      end += 4
+      (length,) = _struct_I.unpack(str[start:end])
+      start = end
+      end += length
+      if python3:
+        self.costMap.header.frame_id = str[start:end].decode('utf-8')
+      else:
+        self.costMap.header.frame_id = str[start:end]
+      _x = self
+      start = end
+      end += 76
+      (_x.costMap.info.map_load_time.secs, _x.costMap.info.map_load_time.nsecs, _x.costMap.info.resolution, _x.costMap.info.width, _x.costMap.info.height, _x.costMap.info.origin.position.x, _x.costMap.info.origin.position.y, _x.costMap.info.origin.position.z, _x.costMap.info.origin.orientation.x, _x.costMap.info.origin.orientation.y, _x.costMap.info.origin.orientation.z, _x.costMap.info.origin.orientation.w,) = _struct_2If2I7d.unpack(str[start:end])
+      start = end
+      end += 4
+      (length,) = _struct_I.unpack(str[start:end])
+      pattern = '<%sb'%length
+      start = end
+      end += struct.calcsize(pattern)
+      self.costMap.data = struct.unpack(pattern, str[start:end])
       _x = self
       start = end
       end += 112
@@ -261,9 +307,26 @@ float64 w
       pattern = '<%sb'%length
       buff.write(self.map.data.tostring())
       _x = self
+      buff.write(_struct_3I.pack(_x.costMap.header.seq, _x.costMap.header.stamp.secs, _x.costMap.header.stamp.nsecs))
+      _x = self.costMap.header.frame_id
+      length = len(_x)
+      if python3 or type(_x) == unicode:
+        _x = _x.encode('utf-8')
+        length = len(_x)
+      if python3:
+        buff.write(struct.pack('<I%sB'%length, length, *_x))
+      else:
+        buff.write(struct.pack('<I%ss'%length, length, _x))
+      _x = self
+      buff.write(_struct_2If2I7d.pack(_x.costMap.info.map_load_time.secs, _x.costMap.info.map_load_time.nsecs, _x.costMap.info.resolution, _x.costMap.info.width, _x.costMap.info.height, _x.costMap.info.origin.position.x, _x.costMap.info.origin.position.y, _x.costMap.info.origin.position.z, _x.costMap.info.origin.orientation.x, _x.costMap.info.origin.orientation.y, _x.costMap.info.origin.orientation.z, _x.costMap.info.origin.orientation.w))
+      length = len(self.costMap.data)
+      buff.write(_struct_I.pack(length))
+      pattern = '<%sb'%length
+      buff.write(self.costMap.data.tostring())
+      _x = self
       buff.write(_struct_14d.pack(_x.start.position.x, _x.start.position.y, _x.start.position.z, _x.start.orientation.x, _x.start.orientation.y, _x.start.orientation.z, _x.start.orientation.w, _x.goal.position.x, _x.goal.position.y, _x.goal.position.z, _x.goal.orientation.x, _x.goal.orientation.y, _x.goal.orientation.z, _x.goal.orientation.w))
-    except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(_x))))
-    except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(_x))))
+    except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
+    except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
   def deserialize_numpy(self, str, numpy):
     """
@@ -276,6 +339,8 @@ float64 w
         self.frameID = std_msgs.msg.String()
       if self.map is None:
         self.map = nav_msgs.msg.OccupancyGrid()
+      if self.costMap is None:
+        self.costMap = nav_msgs.msg.OccupancyGrid()
       if self.start is None:
         self.start = geometry_msgs.msg.Pose()
       if self.goal is None:
@@ -314,6 +379,30 @@ float64 w
       start = end
       end += struct.calcsize(pattern)
       self.map.data = numpy.frombuffer(str[start:end], dtype=numpy.int8, count=length)
+      _x = self
+      start = end
+      end += 12
+      (_x.costMap.header.seq, _x.costMap.header.stamp.secs, _x.costMap.header.stamp.nsecs,) = _struct_3I.unpack(str[start:end])
+      start = end
+      end += 4
+      (length,) = _struct_I.unpack(str[start:end])
+      start = end
+      end += length
+      if python3:
+        self.costMap.header.frame_id = str[start:end].decode('utf-8')
+      else:
+        self.costMap.header.frame_id = str[start:end]
+      _x = self
+      start = end
+      end += 76
+      (_x.costMap.info.map_load_time.secs, _x.costMap.info.map_load_time.nsecs, _x.costMap.info.resolution, _x.costMap.info.width, _x.costMap.info.height, _x.costMap.info.origin.position.x, _x.costMap.info.origin.position.y, _x.costMap.info.origin.position.z, _x.costMap.info.origin.orientation.x, _x.costMap.info.origin.orientation.y, _x.costMap.info.origin.orientation.z, _x.costMap.info.origin.orientation.w,) = _struct_2If2I7d.unpack(str[start:end])
+      start = end
+      end += 4
+      (length,) = _struct_I.unpack(str[start:end])
+      pattern = '<%sb'%length
+      start = end
+      end += struct.calcsize(pattern)
+      self.costMap.data = numpy.frombuffer(str[start:end], dtype=numpy.int8, count=length)
       _x = self
       start = end
       end += 112
@@ -395,7 +484,6 @@ float64 x
 float64 y
 float64 z
 float64 w
-
 """
   __slots__ = ['waypoints']
   _slot_types = ['nav_msgs/Path']
@@ -469,8 +557,8 @@ float64 w
         _v5 = _v3.orientation
         _x = _v5
         buff.write(_struct_4d.pack(_x.x, _x.y, _x.z, _x.w))
-    except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(_x))))
-    except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(_x))))
+    except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
+    except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
   def deserialize(self, str):
     """
@@ -577,8 +665,8 @@ float64 w
         _v15 = _v13.orientation
         _x = _v15
         buff.write(_struct_4d.pack(_x.x, _x.y, _x.z, _x.w))
-    except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(_x))))
-    except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(_x))))
+    except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
+    except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
   def deserialize_numpy(self, str, numpy):
     """
@@ -650,6 +738,6 @@ _struct_2I = struct.Struct("<2I")
 _struct_3d = struct.Struct("<3d")
 class AStar(object):
   _type          = 'tsane_mmlamare_mwpiazza_lab4/AStar'
-  _md5sum = '0f4d092bfab119cf1d1b92358660b2cf'
+  _md5sum = '0e3cd40f90d5ac4d7658bc4cfa360931'
   _request_class  = AStarRequest
   _response_class = AStarResponse
