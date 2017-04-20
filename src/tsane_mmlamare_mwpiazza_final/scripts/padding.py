@@ -4,8 +4,10 @@
 File for expanding obstacles in occupancy grid map
 
 Authors: 
- - Matthew Lamare
- - Matthew Piazza
+    - Matthew Lamare
+    - Matthew Piazza
+    - Tanuj Sane
+
 Updated: 4/11/17
 """
 
@@ -41,7 +43,7 @@ def dilate(gridMap):
             isNotLeftColumn = col > 0
             isNotRightColumn = col+1 < gridMap.info.width            
             if gridMap.data[index] in [100, -1]:
-            	newGridMap.data[index] = 100 # set unknown cells to obstacles
+                newGridMap.data[index] = 100 # set unknown cells to obstacles
                 #Four connect 
                 if isNotTopRow: 
                     newGridMap.data[index-gridMap.info.width] = 100

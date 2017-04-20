@@ -3,7 +3,11 @@
 """ 
 ROS Server calculating the path between two points on a map using the A* algorithm
 
-Authors: Matthew Piazza
+Author:
+    - Tanuj Sane
+    - Matthew Lamare
+    - Matthew Piazza
+
 Date: 4/10/17
 """
 
@@ -31,7 +35,7 @@ class StarNode():
 # ROS node 
 class AStarServiceServer():
     # set up server  
-    def __init__(self):        	    
+    def __init__(self):                
         rospy.init_node('a_star_server_apo')
         s = rospy.Service('a_star', AStar, self.handleAStar)
         self.frameID = "map"
@@ -63,7 +67,11 @@ class AStarServiceServer():
         self.origin = wallMap.info.origin          
         
         # create map of nodes
-        grid = [[(wallMap.data[(row*mapColumns) + col], costMap.data[(row*mapColumns) + col]) for col in range(mapColumns)] for row in range(mapRows)]  
+        if costMap.data:
+            grid = [[(wallMap.data[(row*mapColumns) + col], costMap.data[(row*mapColumns) + col]) for col in range(mapColumns)] for row in range(mapRows)]
+        else:
+            # without costmap, all cells are equally costly
+            grid = [[(wallMap.data[(row*mapColumns) + col], 100) for col in range(mapColumns)] for row in range(mapRows)]
         self.starMap = [[None for col in range(len(grid[row]))] for row in range(len(grid))]  
         for row in range(len(grid)):
             for col in range(len(grid[row])):
@@ -79,37 +87,37 @@ class AStarServiceServer():
         startNode = self.getNodeFromXY(startX, startY)
         goalNode = self.getNodeFromXY(goalX, goalY)        
         if startNode and goalNode:
-        	self.visitedNodes = [] # list of evaluated nodes
-        	self.frontierNodes = [startNode] # list of nodes needing to be evaluated
-	        previousStepTo = {} # linked list of most efficient previous steps
-	        startNode.knownCost = 0
-	        startNode.predictedCost = self.heuristic(startNode, goalNode)
+            self.visitedNodes = [] # list of evaluated nodes
+            self.frontierNodes = [startNode] # list of nodes needing to be evaluated
+            previousStepTo = {} # linked list of most efficient previous steps
+            startNode.knownCost = 0
+            startNode.predictedCost = self.heuristic(startNode, goalNode)
 
-	        while self.frontierNodes != []:
-	            # check for finished
-	            currentNode = self.getMinimumNode()
-	            if currentNode == goalNode:        
-	                return self.buildPath(previousStepTo, currentNode)
+            while self.frontierNodes != []:
+                # check for finished
+                currentNode = self.getMinimumNode()
+                if currentNode == goalNode:        
+                    return self.buildPath(previousStepTo, currentNode)
 
-	            # evaluate possible steps from current node
-	            self.frontierNodes.remove(currentNode)
-	            self.visitedNodes.append(currentNode)
-	            for neighborNode in self.getNeighbors(currentNode):
-	                # skip neighbor if already visited, otherwise it is a frontier cell to check
-	                if neighborNode in self.visitedNodes:
-	                    continue
+                # evaluate possible steps from current node
+                self.frontierNodes.remove(currentNode)
+                self.visitedNodes.append(currentNode)
+                for neighborNode in self.getNeighbors(currentNode):
+                    # skip neighbor if already visited, otherwise it is a frontier cell to check
+                    if neighborNode in self.visitedNodes:
+                        continue
 
-	                # check if neighbor is new cell and an optimal path
-	                neighborKnownCost = currentNode.knownCost + self.heuristic(currentNode, neighborNode)
-	                if neighborNode not in self.frontierNodes and not neighborNode.isWall:
-	                    self.frontierNodes.append(neighborNode)
-	                elif neighborKnownCost >= neighborNode.knownCost and neighborNode.knownCost != -1:
-	                    continue
+                    # check if neighbor is new cell and an optimal path
+                    neighborKnownCost = currentNode.knownCost + self.heuristic(currentNode, neighborNode)
+                    if neighborNode not in self.frontierNodes and not neighborNode.isWall:
+                        self.frontierNodes.append(neighborNode)
+                    elif neighborKnownCost >= neighborNode.knownCost and neighborNode.knownCost != -1:
+                        continue
 
-	                # update neighbor node with new optimal costs
-	                previousStepTo[neighborNode] = currentNode
-	                neighborNode.knownCost = neighborKnownCost
-	                neighborNode.predictedCost = neighborNode.knownCost + self.heuristic(neighborNode, goalNode)
+                    # update neighbor node with new optimal costs
+                    previousStepTo[neighborNode] = currentNode
+                    neighborNode.knownCost = neighborKnownCost
+                    neighborNode.predictedCost = neighborNode.knownCost + self.heuristic(neighborNode, goalNode)
 
         print("A* Server: Could not find a path :( ")
         return []
@@ -127,7 +135,7 @@ class AStarServiceServer():
         return None  
 
     # estimates distance between two nodes
-    def heuristic(self, currentNode, goalNode):    	
+    def heuristic(self, currentNode, goalNode):        
         diffX = abs(currentNode.x - goalNode.x)
         diffY = abs(currentNode.y - goalNode.y)        
         distance = math.hypot(diffX, diffY)                
@@ -182,23 +190,23 @@ class AStarServiceServer():
 
     # creates orientation and position directions to follow to execute the given path
     def calculateWaypoints(self, path): 
-    	waypoints = Path()
-    	waypoints.header.seq = 1
+        waypoints = Path()
+        waypoints.header.seq = 1
         waypoints.header.stamp = rospy.Time.now()
         waypoints.header.frame_id = self.frameID
 
         if path != []:
-        	prevNode = path[0]
-        	delta = (0, 0) # final orientation is facing east   	
-        	for currentNode in path[1:]: # will not throw index error if path only one element    	
-        		newDelta = ((prevNode.x-currentNode.x)*1000000//1, (prevNode.y-currentNode.y)*1000000//1)    		    		
-        		if (delta != newDelta):    			
-        			waypoints.poses.append(self.createPoseStamped(prevNode.x, prevNode.y, math.atan2(delta[1], delta[0])))
-        		delta = newDelta
-        		prevNode = currentNode 
-        	waypoints.poses.append(self.createPoseStamped(prevNode.x, prevNode.y, math.atan2(delta[1], delta[0])))
-        	print("A* Server: Got a path, here ya go!")
-    	return waypoints
+            prevNode = path[0]
+            delta = (0, 0) # final orientation is facing east       
+            for currentNode in path[1:]: # will not throw index error if path only one element        
+                newDelta = ((prevNode.x-currentNode.x)*1000000//1, (prevNode.y-currentNode.y)*1000000//1)                        
+                if (delta != newDelta):                
+                    waypoints.poses.insert(0, self.createPoseStamped(prevNode.x, prevNode.y, math.atan2(delta[1], delta[0])))
+                delta = newDelta
+                prevNode = currentNode 
+            waypoints.poses.insert(0, self.createPoseStamped(prevNode.x, prevNode.y, math.atan2(delta[1], delta[0])))
+            print("A* Server: Got a path, here ya go!")
+        return waypoints
 
     # create PoseStamped message given x, y, and radian orientation
     def createPoseStamped(self, x, y, radians):   

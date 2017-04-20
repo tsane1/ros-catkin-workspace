@@ -19,18 +19,19 @@ Version:
 import rospy, tf, math
 from std_msgs.msg import String
 from nav_msgs.msg import Path, OccupancyGrid
-from geometry_msgs.msg import Twist, Pose, Point, PoseStamped, Quaternion
+from geometry_msgs.msg import Twist, Pose, Point, PointStamped, PoseStamped, Quaternion
 from tf.transformations import euler_from_quaternion
 from tsane_mmlamare_mwpiazza_lab4.srv import *
 
 #REPLAN_RATE = 2 # seconds
 ODOM_RATE = .1 # seconds
+REPLAN_INTERVAL = 10           # seconds
 GOAL_TOLERANCE = .5            # meters
 ROTATE_TOLERANCE = .1          # radians
 STRAIGHT_SPEED = .15           # m/sec
 STRAIGHT_BUFFER = .05          # number of cms to stop early
-ROTATE_SPEED = 1               # rad/sec
-ACCELERATION_FACTOR = .75
+ROTATE_SPEED = .5              # rad/sec
+USE_COSTMAP = False
 
 """
 Encapsulation of a Turtlebot with necessary functionality
@@ -44,9 +45,10 @@ class Turtlebot():
 
         # constants
         self.spinWheelsInterval = .01 # seconds
-        self.replanInterval = 5       # seconds
+        self.replanInterval = 10      # seconds
         self.frameID = String()
-        self.frameID.data = "map" 
+        self.frameID.data = "map"
+        self.pathPlanID = 0 
 
         # State
         self.mapIsSet = False
@@ -56,25 +58,24 @@ class Turtlebot():
         self.lastNavTime = rospy.Time.now()
         self.pose = Pose()
         self.map = OccupancyGrid()
+        self.costMap = OccupancyGrid()
 
         # Publishers
         self.driver = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=10)
         self.pubWaypoints = rospy.Publisher('/waypoints', Path, queue_size=10)
+        self.pubPos = rospy.Publisher('/currentPos', PointStamped, queue_size=10)
         
         # Subscribers            
-        #self.subMap = rospy.Subscriber("/expanded", OccupancyGrid, self.saveMap, queue_size=1)
-        #self.subCostMap = rospy.Subscriber("/move_base/global_costmap/costmap", OccupancyGrid, self.saveCostMap, queue_size=1)
-        #self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEndAndNav, queue_size=1)
+        self.subMap = rospy.Subscriber("/expanded", OccupancyGrid, self.saveMap, queue_size=1)
+        if USE_COSTMAP:
+            self.subCostMap = rospy.Subscriber("/move_base/global_costmap/costmap", OccupancyGrid, self.saveCostMap, queue_size=1)
+        self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEndAndNav, queue_size=1)
 
         # Timers
         self.odometry = tf.TransformListener()
         rospy.Timer(rospy.Duration(ODOM_RATE), self.monitorOdometry)
         rospy.sleep(rospy.Duration(1, 0)) # wait for a moment to set pose
-
-        self.replanInterval = 10             # seconds                
-        self.driveStraightBy(1.6)
-
-        #rospy.spin()
+        rospy.spin()
     
     """
     Helper function to save expanded obstacle map to class
@@ -96,7 +97,7 @@ class Turtlebot():
     def setEndAndNav(self, poseStampedMsg):
         self.goalPose = poseStampedMsg.pose
         self.endIsSet = True
-        if self.startIsSet and self.mapIsSet and self.endIsSet and self.costMapIsSet:
+        if self.startIsSet and self.mapIsSet and self.endIsSet and (self.costMapIsSet or not USE_COSTMAP):
             self.navigate() 
         elif not self.startIsSet or not self.endIsSet:
             print("TURTLEBOT: Endpoints not set")
@@ -112,18 +113,23 @@ class Turtlebot():
         self.pose.position = Point(pos[0], pos[1], pos[2])        
         orientation = Quaternion(quaternion[0], quaternion[1], quaternion[2], quaternion[3])        
         self.pose.orientation.z = tf.transformations.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
+        self.publishPosition()
         self.startIsSet = True    
 
     """
     navigate along a path of waypoints to the set end goal pose
     """
-    def navigate(self):               
-        while True:              
+    def navigate(self):       
+        setattr(self, "path"+str(self.pathPlanID), True)        
+        for id in range(self.pathPlanID):
+            setattr(self, "path"+str(id), False)        
+        self.pathPlanID += 1
+        while getattr(self, "path"+str(self.pathPlanID)):           
+            self.scanSurroundings()
             path = self.callAStar()            
-            self.lastNavTime = rospy.Time.now()
-            print("TURTLEBOT: Waypoints left to navigate:", len(path))
             if path == []:
                 break 
+            self.lastNavTime = rospy.Time.now()
             for pose in path: 
                 self.navToPose(pose)
 
@@ -141,6 +147,7 @@ class Turtlebot():
             path = []             
             for poseStamped in response.waypoints.poses: 
                 path.insert(0, poseStamped.pose)  
+            print("TURTLEBOT: A* Waypoints Received:", len(path))
             return path[1:]
         
         except rospy.ServiceException, e:
@@ -158,9 +165,30 @@ class Turtlebot():
         dist = math.hypot(xDiff, yDiff)         
         # execute move       
         if dist > GOAL_TOLERANCE:
+            print(self.pose.orientation.z*180.0/math.pi, preturnAngle*180.0/math.pi, dist, finalAngle*180.0/math.pi)
             self.rotateTo(preturnAngle)     # rotate towards goal
-            self.driveStraightBy(STRAIGHT_SPEED, dist)  # move to goal
-            self.rotateTo(finalAngle)       # rotate towards final orientation           
+            self.driveStraightBy(dist)  # move to goal
+            self.rotateTo(finalAngle)       # rotate towards final orientation         
+
+    """
+    drive to a goal subscribed as /move_base_simple/navPose
+    """
+    def scanSurroundings(self):
+        print("TURTLEBOT: Scanning surroundings")
+        self.replanInterval = 1000
+        self.lastNavTime = rospy.Time.now()        
+        self.rotateTo(0)     
+        rospy.sleep(.5)
+        self.lastNavTime = rospy.Time.now()        
+        self.rotateTo(math.pi*2/3)     
+        rospy.sleep(.5)
+        self.lastNavTime = rospy.Time.now()        
+        self.rotateTo(-math.pi*2/3)
+        rospy.sleep(.5)
+        self.lastNavTime = rospy.Time.now()        
+        self.rotateTo(0)
+        self.replanInterval = REPLAN_INTERVAL
+        print("TURTLEBOT: Finished scanning surroundings")
 
     """
     Drivers
@@ -170,7 +198,7 @@ class Turtlebot():
     Accepts an orientation angle and makes the robot rotate to it.
     """
     def rotateTo(self, angle):
-        if (angle < math.pi and angle > -math.pi): # if angle in valid bounds
+        if (angle <= math.pi and angle >= -math.pi): # if angle in valid bounds
             nearAngle = False  
             while not self.hasIntervalPassed(self.lastNavTime, self.replanInterval) and not nearAngle:
                 # find necessary change in angle to turn by
@@ -228,6 +256,18 @@ class Turtlebot():
         twist.linear.x = linear
         twist.angular.z = angular
         self.driver.publish(twist)
+
+    """
+    A helper for publishing PoseStamped messages
+    """
+    def publishPosition(self):   
+        point = PointStamped()
+        point.header.seq = 1
+        point.header.stamp = rospy.Time.now()
+        point.header.frame_id = self.frameID.data
+        point.point.x = self.pose.position.x
+        point.point.y = self.pose.position.y        
+        self.pubPos.publish(point)
                     
 
 # The program's primary executing section

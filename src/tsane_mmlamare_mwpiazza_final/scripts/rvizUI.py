@@ -3,7 +3,11 @@
 """ 
 ROS Server calculating the path between two points on a map using the A* algorithm
 
-Authors: Matthew Piazza
+Author:
+    - Tanuj Sane
+    - Matthew Lamare
+    - Matthew Piazza
+
 Date: 4/10/17
 """
 
@@ -13,7 +17,7 @@ from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped, PointStamped
 import padding
 
-PADDING = .2 # meters
+PADDING = .4 # meters
 
 # ROS node 
 class AStarServiceClient():
