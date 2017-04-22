@@ -15,7 +15,7 @@ import math
 import rospy, tf
 from nav_msgs.msg import GridCells, Path
 from geometry_msgs.msg import Point, PoseStamped
-from tsane_mmlamare_mwpiazza_lab4.srv import *
+from tsane_mmlamare_mwpiazza_final.srv import *
 
 Z_AXIS = (0, 0, 1)
 TOLERANCE = .5 # meters
@@ -71,14 +71,14 @@ class AStarServiceServer():
             grid = [[(wallMap.data[(row*mapColumns) + col], costMap.data[(row*mapColumns) + col]) for col in range(mapColumns)] for row in range(mapRows)]
         else:
             # without costmap, all cells are equally costly
-            grid = [[(wallMap.data[(row*mapColumns) + col], 100) for col in range(mapColumns)] for row in range(mapRows)]
+            grid = [[(wallMap.data[(row*mapColumns) + col], 1) for col in range(mapColumns)] for row in range(mapRows)]
         self.starMap = [[None for col in range(len(grid[row]))] for row in range(len(grid))]  
         for row in range(len(grid)):
             for col in range(len(grid[row])):
                 if grid[row][col][0] != -1:
                     x = (col*self.resolution) + self.origin.position.x + self.resolution/2.0
                     y = (row*self.resolution) + self.origin.position.y + self.resolution/2.0
-                    isWall = grid[row][col][0] == 100                
+                    isWall = grid[row][col][0] in [100, -1]                
                     cost = grid[row][col][1]
                     self.starMap[row][col] = StarNode(x, y, isWall, row, col, cost)        
 
@@ -95,7 +95,7 @@ class AStarServiceServer():
 
             while self.frontierNodes != []:
                 # check for finished
-                currentNode = self.getMinimumNode()
+                currentNode = self.getMinimumNode(startNode.isWall) 
                 if currentNode == goalNode:        
                     return self.buildPath(previousStepTo, currentNode)
 
@@ -109,8 +109,18 @@ class AStarServiceServer():
 
                     # check if neighbor is new cell and an optimal path
                     neighborKnownCost = currentNode.knownCost + self.heuristic(currentNode, neighborNode)
-                    if neighborNode not in self.frontierNodes and not neighborNode.isWall:
+                    """
+                    If the start node is a wall, then the frontier expansion with getMinimumNode is circular because
+                    all surrounding nodes are appended in a BFS manner. The end goal is overwritten to be the closest
+                    open cell. 
+                    Otherwise if the start node is not a wall, walls are not allowed to be in the frontier and 
+                    the A* frontier expansion is directed towards the goal.
+                    """
+                    if neighborNode not in self.frontierNodes and (not neighborNode.isWall or startNode.isWall):
                         self.frontierNodes.append(neighborNode)
+                        if startNode.isWall and not neighborNode.isWall:
+                            goalNode = neighborNode
+                            self.frontierNodes = [neighborNode]
                     elif neighborKnownCost >= neighborNode.knownCost and neighborNode.knownCost != -1:
                         continue
 
@@ -140,14 +150,18 @@ class AStarServiceServer():
         diffY = abs(currentNode.y - goalNode.y)        
         distance = math.hypot(diffX, diffY)                
         costFactor = .1 + 9*currentNode.heuristicCost/1000.0
+        if currentNode.isWall: 
+            costFactor = 999999
         return distance*costFactor
 
     # gets the node with the smallest known cost, assuming self.frontierNodes is not empty
-    def getMinimumNode(self):        
+    def getMinimumNode(self, startIsWall):        
         minNode = self.frontierNodes[0]
+        if startIsWall:
+            return minNode
         minimum = minNode.predictedCost
         for node in self.frontierNodes:
-            if node.predictedCost < minimum and not node.isWall:
+            if node.predictedCost < minimum:
                 minimum = node.predictedCost
                 minNode = node 
         return minNode

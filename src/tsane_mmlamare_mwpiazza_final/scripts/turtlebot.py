@@ -21,7 +21,7 @@ from std_msgs.msg import String
 from nav_msgs.msg import Path, OccupancyGrid
 from geometry_msgs.msg import Twist, Pose, Point, PointStamped, PoseStamped, Quaternion
 from tf.transformations import euler_from_quaternion
-from tsane_mmlamare_mwpiazza_lab4.srv import *
+from tsane_mmlamare_mwpiazza_final.srv import *
 
 #REPLAN_RATE = 2 # seconds
 ODOM_RATE = .1 # seconds
@@ -69,7 +69,7 @@ class Turtlebot():
         self.subMap = rospy.Subscriber("/expanded", OccupancyGrid, self.saveMap, queue_size=1)
         if USE_COSTMAP:
             self.subCostMap = rospy.Subscriber("/move_base/global_costmap/costmap", OccupancyGrid, self.saveCostMap, queue_size=1)
-        self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEndAndNav, queue_size=1)
+        #self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEndAndNav, queue_size=1)
 
         # Timers
         self.odometry = tf.TransformListener()
@@ -95,6 +95,7 @@ class Turtlebot():
     Helper function to set goal and navigate to it using A*
     """
     def setEndAndNav(self, poseStampedMsg):
+        print("new nav point shown")
         self.goalPose = poseStampedMsg.pose
         self.endIsSet = True
         if self.startIsSet and self.mapIsSet and self.endIsSet and (self.costMapIsSet or not USE_COSTMAP):
@@ -120,18 +121,20 @@ class Turtlebot():
     navigate along a path of waypoints to the set end goal pose
     """
     def navigate(self):       
-        setattr(self, "path"+str(self.pathPlanID), True)        
-        for id in range(self.pathPlanID):
-            setattr(self, "path"+str(id), False)        
+        currentPathID = self.pathPlanID # copy id
         self.pathPlanID += 1
-        while getattr(self, "path"+str(self.pathPlanID)):           
-            self.scanSurroundings()
+        setattr(self, "path"+str(currentPathID), True)        
+        for previousIDs in range(currentPathID):
+            setattr(self, "path"+str(previousIDs), False)  
+        while getattr(self, "path"+str(currentPathID)): 
+            print(getattr(self, "path"+str(currentPathID)), currentPathID)          
+            #self.scanSurroundings()
             path = self.callAStar()            
             if path == []:
                 break 
             self.lastNavTime = rospy.Time.now()
-            for pose in path: 
-                self.navToPose(pose)
+            #for pose in path: 
+            #    self.navToPose(pose)
 
     """
     Asks the AStarService for a new plan    

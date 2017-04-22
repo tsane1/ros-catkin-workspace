@@ -42,7 +42,7 @@ def dilate(gridMap):
             isNotBottomRow = row+1 < gridMap.info.height
             isNotLeftColumn = col > 0
             isNotRightColumn = col+1 < gridMap.info.width            
-            if gridMap.data[index] in [100, -1]:
+            if gridMap.data[index] == 100:
                 newGridMap.data[index] = 100 # set unknown cells to obstacles
                 #Four connect 
                 if isNotTopRow: 
