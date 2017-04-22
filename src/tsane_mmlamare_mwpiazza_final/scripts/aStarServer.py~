@@ -71,8 +71,6 @@ class AStarServiceServer():
                 else:
                     queue.append((neighbor.row, neighbor.col))
 
-        return goalPose
-
     # estimates distance between two nodes
     def distance(self, currentPoint, goalPoint):     
         diffX = abs(currentPoint.x - goalPoint.x)
