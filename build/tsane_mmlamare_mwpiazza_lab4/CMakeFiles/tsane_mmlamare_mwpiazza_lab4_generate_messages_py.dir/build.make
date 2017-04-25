@@ -35,43 +35,43 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/tsane/Ros_ws/src
+CMAKE_SOURCE_DIR = /home/tsane/Documents/ros-catkin-workspace/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/tsane/Ros_ws/build
+CMAKE_BINARY_DIR = /home/tsane/Documents/ros-catkin-workspace/build
 
 # Utility rule file for tsane_mmlamare_mwpiazza_lab4_generate_messages_py.
 
 # Include the progress variables for this target.
 include tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py.dir/progress.make
 
-tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py: /home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py
-tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py: /home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/__init__.py
+tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py: /home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py
+tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py: /home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/__init__.py
 
-/home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/genpy/cmake/../../../lib/genpy/gensrv_py.py
-/home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv
-/home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg
-/home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg
-/home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/nav_msgs/cmake/../msg/Path.msg
-/home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/std_msgs/cmake/../msg/String.msg
-/home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg
-/home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/nav_msgs/cmake/../msg/OccupancyGrid.msg
-/home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg
-/home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/nav_msgs/cmake/../msg/MapMetaData.msg
-/home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tsane/Ros_ws/build/CMakeFiles $(CMAKE_PROGRESS_1)
+/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/genpy/cmake/../../../lib/genpy/gensrv_py.py
+/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv
+/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg
+/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg
+/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/nav_msgs/cmake/../msg/Path.msg
+/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/std_msgs/cmake/../msg/String.msg
+/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg
+/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/nav_msgs/cmake/../msg/OccupancyGrid.msg
+/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg
+/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/nav_msgs/cmake/../msg/MapMetaData.msg
+/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py: /opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tsane/Documents/ros-catkin-workspace/build/CMakeFiles $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Generating Python code from SRV tsane_mmlamare_mwpiazza_lab4/AStar"
-	cd /home/tsane/Ros_ws/build/tsane_mmlamare_mwpiazza_lab4 && ../catkin_generated/env_cached.sh /usr/bin/python /opt/ros/indigo/share/genpy/cmake/../../../lib/genpy/gensrv_py.py /home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv -Istd_msgs:/opt/ros/indigo/share/std_msgs/cmake/../msg -Inav_msgs:/opt/ros/indigo/share/nav_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/indigo/share/geometry_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/indigo/share/actionlib_msgs/cmake/../msg -p tsane_mmlamare_mwpiazza_lab4 -o /home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv
+	cd /home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_mwpiazza_lab4 && ../catkin_generated/env_cached.sh /usr/bin/python /opt/ros/indigo/share/genpy/cmake/../../../lib/genpy/gensrv_py.py /home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4/srv/AStar.srv -Istd_msgs:/opt/ros/indigo/share/std_msgs/cmake/../msg -Inav_msgs:/opt/ros/indigo/share/nav_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/indigo/share/geometry_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/indigo/share/actionlib_msgs/cmake/../msg -p tsane_mmlamare_mwpiazza_lab4 -o /home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv
 
-/home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/__init__.py: /opt/ros/indigo/share/genpy/cmake/../../../lib/genpy/genmsg_py.py
-/home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/__init__.py: /home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tsane/Ros_ws/build/CMakeFiles $(CMAKE_PROGRESS_2)
+/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/__init__.py: /opt/ros/indigo/share/genpy/cmake/../../../lib/genpy/genmsg_py.py
+/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/__init__.py: /home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tsane/Documents/ros-catkin-workspace/build/CMakeFiles $(CMAKE_PROGRESS_2)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Generating Python srv __init__.py for tsane_mmlamare_mwpiazza_lab4"
-	cd /home/tsane/Ros_ws/build/tsane_mmlamare_mwpiazza_lab4 && ../catkin_generated/env_cached.sh /usr/bin/python /opt/ros/indigo/share/genpy/cmake/../../../lib/genpy/genmsg_py.py -o /home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv --initpy
+	cd /home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_mwpiazza_lab4 && ../catkin_generated/env_cached.sh /usr/bin/python /opt/ros/indigo/share/genpy/cmake/../../../lib/genpy/genmsg_py.py -o /home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv --initpy
 
 tsane_mmlamare_mwpiazza_lab4_generate_messages_py: tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py
-tsane_mmlamare_mwpiazza_lab4_generate_messages_py: /home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py
-tsane_mmlamare_mwpiazza_lab4_generate_messages_py: /home/tsane/Ros_ws/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/__init__.py
+tsane_mmlamare_mwpiazza_lab4_generate_messages_py: /home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/_AStar.py
+tsane_mmlamare_mwpiazza_lab4_generate_messages_py: /home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_lab4/srv/__init__.py
 tsane_mmlamare_mwpiazza_lab4_generate_messages_py: tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py.dir/build.make
 .PHONY : tsane_mmlamare_mwpiazza_lab4_generate_messages_py
 
@@ -80,10 +80,10 @@ tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_me
 .PHONY : tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py.dir/build
 
 tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py.dir/clean:
-	cd /home/tsane/Ros_ws/build/tsane_mmlamare_mwpiazza_lab4 && $(CMAKE_COMMAND) -P CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py.dir/cmake_clean.cmake
+	cd /home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_mwpiazza_lab4 && $(CMAKE_COMMAND) -P CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py.dir/cmake_clean.cmake
 .PHONY : tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py.dir/clean
 
 tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py.dir/depend:
-	cd /home/tsane/Ros_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/tsane/Ros_ws/src /home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_lab4 /home/tsane/Ros_ws/build /home/tsane/Ros_ws/build/tsane_mmlamare_mwpiazza_lab4 /home/tsane/Ros_ws/build/tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/tsane/Documents/ros-catkin-workspace/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/tsane/Documents/ros-catkin-workspace/src /home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_lab4 /home/tsane/Documents/ros-catkin-workspace/build /home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_mwpiazza_lab4 /home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : tsane_mmlamare_mwpiazza_lab4/CMakeFiles/tsane_mmlamare_mwpiazza_lab4_generate_messages_py.dir/depend
 

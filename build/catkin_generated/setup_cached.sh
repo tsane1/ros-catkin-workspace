@@ -7,9 +7,7 @@
 # new environment variables
 
 # modified environment variables
-export CPATH="/opt/ros/indigo/include"
-export LD_LIBRARY_PATH="/opt/ros/indigo/lib:/opt/ros/indigo/lib/python2.7/dist-packages:/opt/ros/indigo/lib/python2.7/dist-packages"
-export PKG_CONFIG_PATH="/opt/ros/indigo/lib/pkgconfig"
-export PWD="/home/tsane/Ros_ws/build"
-export PYTHONPATH="/opt/ros/indigo/lib/python2.7/dist-packages"
-export ROS_PACKAGE_PATH="/home/tsane/Ros_ws/src:/opt/ros/indigo/share:/opt/ros/indigo/stacks"
+export CMAKE_PREFIX_PATH="/home/tsane/Documents/ros-catkin-workspace/devel:$CMAKE_PREFIX_PATH"
+export PWD="/home/tsane/Documents/ros-catkin-workspace/build"
+export ROSLISP_PACKAGE_DIRECTORIES="/home/tsane/Documents/ros-catkin-workspace/devel/share/common-lisp"
+export ROS_PACKAGE_PATH="/home/tsane/Documents/ros-catkin-workspace/src:/opt/ros/indigo/share:/opt/ros/indigo/stacks"

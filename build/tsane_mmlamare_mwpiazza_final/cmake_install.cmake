@@ -1,8 +1,8 @@
-# Install script for directory: /home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_final
+# Install script for directory: /home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_final
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  SET(CMAKE_INSTALL_PREFIX "/home/tsane/Ros_ws/install")
+  SET(CMAKE_INSTALL_PREFIX "/home/tsane/Documents/ros-catkin-workspace/install")
 ENDIF(NOT DEFINED CMAKE_INSTALL_PREFIX)
 STRING(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -33,17 +33,45 @@ IF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 ENDIF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/tsane/Ros_ws/build/tsane_mmlamare_mwpiazza_final/catkin_generated/installspace/tsane_mmlamare_mwpiazza_final.pc")
+  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tsane_mmlamare_mwpiazza_final/srv" TYPE FILE FILES "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_final/srv/AStar.srv")
+ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+
+IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tsane_mmlamare_mwpiazza_final/cmake" TYPE FILE FILES "/home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_mwpiazza_final/catkin_generated/installspace/tsane_mmlamare_mwpiazza_final-msg-paths.cmake")
+ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+
+IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/home/tsane/Documents/ros-catkin-workspace/devel/include/tsane_mmlamare_mwpiazza_final")
+ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+
+IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/common-lisp/ros" TYPE DIRECTORY FILES "/home/tsane/Documents/ros-catkin-workspace/devel/share/common-lisp/ros/tsane_mmlamare_mwpiazza_final")
+ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+
+IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+  execute_process(COMMAND "/usr/bin/python" -m compileall "/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_final")
+ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+
+IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/python2.7/dist-packages" TYPE DIRECTORY FILES "/home/tsane/Documents/ros-catkin-workspace/devel/lib/python2.7/dist-packages/tsane_mmlamare_mwpiazza_final")
+ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+
+IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_mwpiazza_final/catkin_generated/installspace/tsane_mmlamare_mwpiazza_final.pc")
+ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+
+IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
+  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tsane_mmlamare_mwpiazza_final/cmake" TYPE FILE FILES "/home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_mwpiazza_final/catkin_generated/installspace/tsane_mmlamare_mwpiazza_final-msg-extras.cmake")
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
   FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tsane_mmlamare_mwpiazza_final/cmake" TYPE FILE FILES
-    "/home/tsane/Ros_ws/build/tsane_mmlamare_mwpiazza_final/catkin_generated/installspace/tsane_mmlamare_mwpiazza_finalConfig.cmake"
-    "/home/tsane/Ros_ws/build/tsane_mmlamare_mwpiazza_final/catkin_generated/installspace/tsane_mmlamare_mwpiazza_finalConfig-version.cmake"
+    "/home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_mwpiazza_final/catkin_generated/installspace/tsane_mmlamare_mwpiazza_finalConfig.cmake"
+    "/home/tsane/Documents/ros-catkin-workspace/build/tsane_mmlamare_mwpiazza_final/catkin_generated/installspace/tsane_mmlamare_mwpiazza_finalConfig-version.cmake"
     )
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tsane_mmlamare_mwpiazza_final" TYPE FILE FILES "/home/tsane/Ros_ws/src/tsane_mmlamare_mwpiazza_final/package.xml")
+  FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tsane_mmlamare_mwpiazza_final" TYPE FILE FILES "/home/tsane/Documents/ros-catkin-workspace/src/tsane_mmlamare_mwpiazza_final/package.xml")
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
 

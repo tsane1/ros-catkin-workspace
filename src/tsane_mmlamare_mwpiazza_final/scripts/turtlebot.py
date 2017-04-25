@@ -83,6 +83,7 @@ class Turtlebot():
     def saveMap(self, grid):
         self.map = grid
         self.mapIsSet = True
+        self.navigate()
 
     """
     Helper function to save costmap to class
@@ -143,7 +144,7 @@ class Turtlebot():
         rospy.wait_for_service('a_star')
         try:
             aStarService = rospy.ServiceProxy('a_star', AStar)                            
-            response = aStarService(self.frameID, self.map, self.costMap, self.pose, self.goalPose)            
+            response = aStarService(self.frameID, self.map, self.costMap, self.pose, None)            
             self.pubWaypoints.publish(response.waypoints)
             
             # reverse waypoints into correct order

@@ -14,7 +14,7 @@ Date: 4/10/17
 import math
 import rospy, tf
 from nav_msgs.msg import GridCells, Path
-from geometry_msgs.msg import Point, PoseStamped
+from geometry_msgs.msg import Point, PoseStamped, Pose
 from tsane_mmlamare_mwpiazza_final.srv import *
 
 Z_AXIS = (0, 0, 1)
@@ -22,15 +22,19 @@ TOLERANCE = .5 # meters
 
 # A* Map Point 
 class StarNode():
-    def __init__(self, x, y, isWall, row, col, heuristicCost):
+    def __init__(self, x, y, isWall, isUnknown, row, col, heuristicCost):
         self.x = x
         self.y = y            
         self.isWall = isWall
+        self.isUnknown = isUnknown
         self.row = row
         self.col = col    
         self.knownCost = -1
         self.predictedCost = -1
         self.heuristicCost = heuristicCost
+
+    def __repr__(self):
+        return str(self.x) + ',' + str(self.y) + ': WALL' if self.isWall else ''
 
 # ROS node 
 class AStarServiceServer():
@@ -44,9 +48,9 @@ class AStarServiceServer():
     # run A* algorithm and return fields
     def handleAStar(self, msg):
         waypointArray = []
-	    self.readOccupancyGridMaps(msg.map, msg.costMap) 		# populate 2D array of StarNodes
-
-        self.decideGoal(msg.start.position)
+        self.readOccupancyGridMaps(msg.map, msg.costMap)
+        goal = self.decideGoal(msg.start.position)
+        print(goal)
 
         if self.distance(msg.start.position, goal.position) > TOLERANCE:       
             self.frameID = msg.frameID.data      
@@ -56,22 +60,39 @@ class AStarServiceServer():
         waypoints = self.calculateWaypoints(waypointArray)        
         return AStarResponse(waypoints)
 
-    def decideGoal(startPosn):
-        startCol = (startPosn.x - self.origin.position.x - self.resolution/2.0) / self.resolution
-        startRow = (startPosn.y - self.origin.position.y - self.resolution/2.0) / self.resolution
+    def decideGoal(self, startPosn):
+        startNode = self.findNode(startPosn)
+        print('start:', startNode)
 
-        queue = [(startRow, startCol)]; goalPose = None
+        queue = [startNode]; goalPose = None
         while goalPose == None:
-            (currRow, currCol) = queue.pop(0)
-            for neighbor in neighbors(currRow, currCol):
-                if neighbor.isWall:
+            currNode = queue.pop(0)
+            for neighbor in self.getNeighbors(currNode):
+                if neighbor.isUnknown:
                     goalPose = Pose()
-                    goalPose.position.x = (currCol*self.resolution) + self.origin.position.x + self.resolution/2.0
-                    goalPose.position.y = (currRow*self.resolution) + self.origin.position.y + self.resolution/2.0
+                    goalPose.position.x = currNode.x
+                    goalPose.position.y = currNode.y
                 else:
-                    queue.append((neighbor.row, neighbor.col))
-
+                    queue.append(currNode)
+        
+        print('goal:', goalPose)
         return goalPose
+
+    """
+    WHY WON'T THIS JUST FUCKING WORK
+    """
+    def findNode(self, posn):
+        for row in range(len(self.starMap)):
+            for col in range(len(self.starMap[row])):
+                x = (col*self.resolution) + posn.x + self.resolution/2.0
+                y = (row*self.resolution) + posn.y + self.resolution/2.0
+
+                test = self.starMap[row][col]
+                if test.x == x and y == posn.y: return test
+
+        print('nope fuck you')
+        return None
+
 
     # estimates distance between two nodes
     def distance(self, currentPoint, goalPoint):     
@@ -95,12 +116,12 @@ class AStarServiceServer():
         self.starMap = [[None for col in range(len(grid[row]))] for row in range(len(grid))]  
         for row in range(len(grid)):
             for col in range(len(grid[row])):
-                if grid[row][col][0] != -1:
-                    x = (col*self.resolution) + self.origin.position.x + self.resolution/2.0
-                    y = (row*self.resolution) + self.origin.position.y + self.resolution/2.0
-                    isWall = grid[row][col][0] in [100, -1]             
-                    cost = grid[row][col][1]
-                    self.starMap[row][col] = StarNode(x, y, isWall, row, col, cost)        
+                x = (col*self.resolution) + self.origin.position.x + self.resolution/2.0
+                y = (row*self.resolution) + self.origin.position.y + self.resolution/2.0
+                isWall = grid[row][col][0] == 100
+                isUnknown = grid[row][col][0] == -1            
+                cost = grid[row][col][1]
+                self.starMap[row][col] = StarNode(x, y, isWall, isUnknown, row, col, cost)
 
     # calculates best path between the set start and end nodes
     def aStar(self, startX, startY, goalX, goalY):
@@ -122,7 +143,7 @@ class AStarServiceServer():
                 # evaluate possible steps from current node
                 self.frontierNodes.remove(currentNode)
                 self.visitedNodes.append(currentNode)
-                for neighborNode in self.getNeighbors(currentNode.row, currentNode.col):
+                for neighborNode in self.getNeighbors(currentNode):
                     # skip neighbor if already visited, otherwise it is a frontier cell to check
                     if neighborNode in self.visitedNodes:
                         continue
@@ -187,7 +208,10 @@ class AStarServiceServer():
         return minNode
 
     # gets this node's neighbors in the A* map if they exist
-    def getNeighbors(self, row, col):
+    def getNeighbors(self, node):
+        row = node.row
+        col = node.col
+
         neighbors = []
         isNotTopRow = row-1 >= 0
         isNotBottomRow = row+1 < len(self.starMap)
