@@ -33,8 +33,10 @@ class StarNode():
         self.predictedCost = -1
         self.heuristicCost = heuristicCost
 
+        self.__str__ = self.__repr__
+
     def __repr__(self):
-        return str(self.x) + ',' + str(self.y) + ': WALL' if self.isWall else ''
+        return str(self.x) + ',' + str(self.y) + (': WALL' if self.isWall else ': NOT WALL') + '\n'   
 
 # ROS node 
 class AStarServiceServer():
@@ -50,49 +52,40 @@ class AStarServiceServer():
         waypointArray = []
         self.readOccupancyGridMaps(msg.map, msg.costMap)
         goal = self.decideGoal(msg.start.position)
-        print(goal)
 
         if self.distance(msg.start.position, goal.position) > TOLERANCE:       
             self.frameID = msg.frameID.data      
-            waypointArray = self.aStar(msg.start.position.x, msg.start.position.y, msg.goal.position.x, msg.goal.position.y)
+            waypointArray = self.aStar(msg.start.position.x, msg.start.position.y, goal.position.x, goal.position.y)
         else:
             print("A* Server: Goal Reached!")
+
         waypoints = self.calculateWaypoints(waypointArray)        
         return AStarResponse(waypoints)
 
     def decideGoal(self, startPosn):
-        startNode = self.findNode(startPosn)
-        print('start:', startNode)
+        startNode = self.getNodeFromXY(startPosn.x, startPosn.y)      
+        decider = lambda neighbor: (not (neighbor.isWall or neighbor.isUnknown) and self.distance(neighbor, startNode) > TOLERANCE + (4 * self.resolution)) if startNode.isWall else (neighbor.isUnknown)
 
-        queue = [startNode]; goalPose = None
-        while goalPose == None:
+        print('A* SERVER: start:', startNode)
+        queue = [startNode]
+        visitedNodes = [startNode] # list of evaluated nodes
+        goalPose = None
+        # add visited flag to BFS
+        while len(queue) != 0:
             currNode = queue.pop(0)
             for neighbor in self.getNeighbors(currNode):
-                if neighbor.isUnknown:
+                if decider(neighbor): # find first unknown space
                     goalPose = Pose()
                     goalPose.position.x = currNode.x
                     goalPose.position.y = currNode.y
-                else:
-                    queue.append(currNode)
-        
-        print('goal:', goalPose)
-        return goalPose
-
-    """
-    WHY WON'T THIS JUST FUCKING WORK
-    """
-    def findNode(self, posn):
-        for row in range(len(self.starMap)):
-            for col in range(len(self.starMap[row])):
-                x = (col*self.resolution) + posn.x + self.resolution/2.0
-                y = (row*self.resolution) + posn.y + self.resolution/2.0
-
-                test = self.starMap[row][col]
-                if test.x == x and y == posn.y: return test
-
-        print('nope fuck you')
-        return None
-
+                    queue = []
+                else: # continue searching
+                    if startNode.isWall or (not neighbor.isWall and not neighbor.isUnknown): 
+                        if neighbor not in visitedNodes:
+                            queue.append(neighbor)          
+                            visitedNodes.append(neighbor)
+        print('A* SERVER: goal:', goalPose.position.x, goalPose.position.y)
+        return goalPose # might be none if caught with no frontier
 
     # estimates distance between two nodes
     def distance(self, currentPoint, goalPoint):     
@@ -241,9 +234,9 @@ class AStarServiceServer():
     def buildPath(self, previousStepTo, endNode):
         path = []
         while endNode in previousStepTo: 
-            path.append(endNode)
+            path.insert(0, endNode)
             endNode = previousStepTo[endNode] # step back making the path one node shorter and closer to the start
-        path.append(endNode) # ensure the start node is included on the path
+        path.insert(0, endNode) # ensure the start node is included on the path for display purposes
         return path
 
     # creates orientation and position directions to follow to execute the given path
@@ -259,10 +252,11 @@ class AStarServiceServer():
             for currentNode in path[1:]: # will not throw index error if path only one element        
                 newDelta = ((prevNode.x-currentNode.x)*1000000//1, (prevNode.y-currentNode.y)*1000000//1)                        
                 if (delta != newDelta):                
-                    waypoints.poses.insert(0, self.createPoseStamped(prevNode.x, prevNode.y, math.atan2(delta[1], delta[0])))
+                    waypoints.poses.append(self.createPoseStamped(prevNode.x, prevNode.y, math.atan2(delta[1], delta[0])))
                 delta = newDelta
                 prevNode = currentNode 
-            waypoints.poses.insert(0, self.createPoseStamped(prevNode.x, prevNode.y, math.atan2(delta[1], delta[0])))
+            waypoints.poses.append(self.createPoseStamped(prevNode.x, prevNode.y, math.atan2(delta[1], delta[0])))
+
             print("A* Server: Got a path, here ya go!")
         return waypoints
 

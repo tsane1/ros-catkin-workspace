@@ -17,7 +17,7 @@ from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped, PointStamped
 import padding
 
-PADDING = .4 # meters
+PADDING = .2 # meters
 
 # ROS node 
 class AStarServiceClient():
@@ -26,8 +26,7 @@ class AStarServiceClient():
 
         # set up topics   
         self.subMap = rospy.Subscriber("/map", OccupancyGrid, self.saveOccupancyGrid, queue_size=1) # Callback function to load map on initial load                           
-        self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEnd, queue_size=1) # Callback function to load map on initial load
-        self.pubEnd = rospy.Publisher('/endPoint', PointStamped, queue_size=10)      
+        #self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEnd, queue_size=1) # Callback function to load map on initial load    
         self.pubExpanded = rospy.Publisher('/expanded', OccupancyGrid, queue_size=10)  
         rospy.Timer(rospy.Duration(2), self.publishGrid)               
 
@@ -39,8 +38,7 @@ class AStarServiceClient():
 
     # expands obstacles and save grid for future use
     def saveOccupancyGrid(self, grid):         
-        self.map = padding.dilateByK(grid, PADDING) 
-            
+        self.map = padding.dilateByK(grid, PADDING)             
 
     # sets end of A* based on Publish Point
     def setEnd(self, poseStampedMsg):      

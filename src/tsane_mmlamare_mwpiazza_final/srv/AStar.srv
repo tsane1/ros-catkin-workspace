@@ -2,6 +2,5 @@ std_msgs/String frameID
 nav_msgs/OccupancyGrid map
 nav_msgs/OccupancyGrid costMap
 geometry_msgs/Pose start
-geometry_msgs/Pose goal
 ---
 nav_msgs/Path waypoints
