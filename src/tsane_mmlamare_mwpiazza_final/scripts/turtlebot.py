@@ -45,16 +45,14 @@ class Turtlebot():
 
         # constants
         self.spinWheelsInterval = .01 # seconds
-        self.replanInterval = 10      # seconds
+        self.replanInterval = 60      # seconds
         self.frameID = String()
         self.frameID.data = "map"
-        self.pathPlanID = 0 
 
         # State
         self.mapIsSet = False
         self.costMapIsSet = False
         self.startIsSet = False
-        self.endIsSet = False
         self.lastNavTime = rospy.Time.now()
         self.pose = Pose()
         self.map = OccupancyGrid()
@@ -64,47 +62,32 @@ class Turtlebot():
         self.driver = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=10)
         self.pubWaypoints = rospy.Publisher('/waypoints', Path, queue_size=10)
         self.pubPos = rospy.Publisher('/currentPos', PointStamped, queue_size=10)
+        self.pubEnd = rospy.Publisher('/endPoint', PointStamped, queue_size=10)  
         
         # Subscribers            
         self.subMap = rospy.Subscriber("/expanded", OccupancyGrid, self.saveMap, queue_size=1)
         if USE_COSTMAP:
             self.subCostMap = rospy.Subscriber("/move_base/global_costmap/costmap", OccupancyGrid, self.saveCostMap, queue_size=1)
-        #self.subEnd = rospy.Subscriber("/customGoal", PoseStamped, self.setEndAndNav, queue_size=1)
 
         # Timers
         self.odometry = tf.TransformListener()
         rospy.Timer(rospy.Duration(ODOM_RATE), self.monitorOdometry)
         rospy.sleep(rospy.Duration(1, 0)) # wait for a moment to set pose
-        rospy.spin()
+        self.navigate()
     
     """
     Helper function to save expanded obstacle map to class
     """
     def saveMap(self, grid):
-        self.map = grid
+        self.map = grid        
         self.mapIsSet = True
-        self.navigate()
 
     """
     Helper function to save costmap to class
     """
     def saveCostMap(self, grid):
         self.costMap = grid
-        self.costMapIsSet = True
-
-    """
-    Helper function to set goal and navigate to it using A*
-    """
-    def setEndAndNav(self, poseStampedMsg):
-        print("new nav point shown")
-        self.goalPose = poseStampedMsg.pose
-        self.endIsSet = True
-        if self.startIsSet and self.mapIsSet and self.endIsSet and (self.costMapIsSet or not USE_COSTMAP):
-            self.navigate() 
-        elif not self.startIsSet or not self.endIsSet:
-            print("TURTLEBOT: Endpoints not set")
-        else:
-            print("TURTLEBOT: Map unknown")   
+        self.costMapIsSet = True   
 
     """
     Read the robot's current position
@@ -121,21 +104,19 @@ class Turtlebot():
     """
     navigate along a path of waypoints to the set end goal pose
     """
-    def navigate(self):       
-        currentPathID = self.pathPlanID # copy id
-        self.pathPlanID += 1
-        setattr(self, "path"+str(currentPathID), True)        
-        for previousIDs in range(currentPathID):
-            setattr(self, "path"+str(previousIDs), False)  
-        while getattr(self, "path"+str(currentPathID)): 
-            print(getattr(self, "path"+str(currentPathID)), currentPathID)          
-            #self.scanSurroundings()
-            path = self.callAStar()            
-            if path == []:
-                break 
-            self.lastNavTime = rospy.Time.now()
-            #for pose in path: 
-            #    self.navToPose(pose)
+    def navigate(self):   
+        #self.scanSurroundings() TODO   
+        while True: 
+            if self.startIsSet and self.mapIsSet and (self.costMapIsSet or not USE_COSTMAP):                
+                self.scanSurroundings()
+                path = self.callAStar()            
+                if path == []:
+                    print("TURTLEBOT: Goal Reached")
+                    continue 
+                self.lastNavTime = rospy.Time.now()
+                for pose in path: 
+                    self.navToPose(pose)
+                print("TURTLEBOT: navigation iteration complete. replanning")
 
     """
     Asks the AStarService for a new plan    
@@ -144,15 +125,16 @@ class Turtlebot():
         rospy.wait_for_service('a_star')
         try:
             aStarService = rospy.ServiceProxy('a_star', AStar)                            
-            response = aStarService(self.frameID, self.map, self.costMap, self.pose, None)            
-            self.pubWaypoints.publish(response.waypoints)
+            response = aStarService(self.frameID, self.map, self.costMap, self.pose)            
+            self.pubWaypoints.publish(response.waypoints)            
+            if (len(response.waypoints.poses) > 0):
+                self.publishGoal(response.waypoints.poses[-1].pose.position) 
             
-            # reverse waypoints into correct order
             path = []             
             for poseStamped in response.waypoints.poses: 
-                path.insert(0, poseStamped.pose)  
+                path.append(poseStamped.pose) 
             print("TURTLEBOT: A* Waypoints Received:", len(path))
-            return path[1:]
+            return path
         
         except rospy.ServiceException, e:
             print("TURTLEBOT: Service call failed:\n", e)
@@ -169,10 +151,12 @@ class Turtlebot():
         dist = math.hypot(xDiff, yDiff)         
         # execute move       
         if dist > GOAL_TOLERANCE:
-            print(self.pose.orientation.z*180.0/math.pi, preturnAngle*180.0/math.pi, dist, finalAngle*180.0/math.pi)
+            print("TURTLEBOT: Naving to pose")
             self.rotateTo(preturnAngle)     # rotate towards goal
             self.driveStraightBy(dist)  # move to goal
-            self.rotateTo(finalAngle)       # rotate towards final orientation         
+            self.rotateTo(finalAngle)       # rotate towards final orientation 
+        else:
+            print("TURTLEBOT: Waypoint within goal tolerance")         
 
     """
     drive to a goal subscribed as /move_base_simple/navPose
@@ -272,6 +256,18 @@ class Turtlebot():
         point.point.x = self.pose.position.x
         point.point.y = self.pose.position.y        
         self.pubPos.publish(point)
+
+    """
+    A helper for publishing PoseStamped messages
+    """
+    def publishGoal(self, position):   
+        point = PointStamped()
+        point.header.seq = 1
+        point.header.stamp = rospy.Time.now()
+        point.header.frame_id = self.frameID.data
+        point.point.x = position.x
+        point.point.y = position.y        
+        self.pubEnd.publish(point)
                     
 
 # The program's primary executing section
