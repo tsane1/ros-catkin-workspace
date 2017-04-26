@@ -18,7 +18,7 @@ from geometry_msgs.msg import Point, PoseStamped, Pose
 from tsane_mmlamare_mwpiazza_final.srv import *
 
 Z_AXIS = (0, 0, 1)
-TOLERANCE = .5 # meters
+TOLERANCE = .1 # meters
 
 # A* Map Point 
 class StarNode():
@@ -47,20 +47,25 @@ class AStarServiceServer():
         self.frameID = "map"
         rospy.spin()                    
 
-    # run A* algorithm and return fields
+    """
+    run A* algorithm and return fields
+    """
     def handleAStar(self, msg):
         waypointArray = []
         self.readOccupancyGridMaps(msg.map, msg.costMap)
         goal = self.decideGoal(msg.start.position)
+        frontierExplored = False
+        if not goal:
+            frontierExplored = True
 
-        if self.distance(msg.start.position, goal.position) > TOLERANCE:       
+        if goal and self.distance(msg.start.position, goal.position) > TOLERANCE:       
             self.frameID = msg.frameID.data      
             waypointArray = self.aStar(msg.start.position.x, msg.start.position.y, goal.position.x, goal.position.y)
         else:
             print("A* Server: Goal Reached!")
 
         waypoints = self.calculateWaypoints(waypointArray)        
-        return AStarResponse(waypoints)
+        return AStarResponse(waypoints, frontierExplored)
 
     def decideGoal(self, startPosn):
         startNode = self.getNodeFromXY(startPosn.x, startPosn.y)      
@@ -84,7 +89,8 @@ class AStarServiceServer():
                         if neighbor not in visitedNodes:
                             queue.append(neighbor)          
                             visitedNodes.append(neighbor)
-        print('A* SERVER: goal:', goalPose.position.x, goalPose.position.y)
+        if goalPose != None:
+            print('A* SERVER: goal:', goalPose.position.x, goalPose.position.y)
         return goalPose # might be none if caught with no frontier
 
     # estimates distance between two nodes

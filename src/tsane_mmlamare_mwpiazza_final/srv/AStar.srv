@@ -4,3 +4,4 @@ nav_msgs/OccupancyGrid costMap
 geometry_msgs/Pose start
 ---
 nav_msgs/Path waypoints
+bool frontierExplored

@@ -17,7 +17,7 @@ from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped, PointStamped
 import padding
 
-PADDING = .2 # meters
+PADDING = .3 # meters
 
 # ROS node 
 class AStarServiceClient():

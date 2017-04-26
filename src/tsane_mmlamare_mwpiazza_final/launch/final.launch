@@ -6,4 +6,8 @@
     <node name="rviz_ui_client" pkg="tsane_mmlamare_mwpiazza_final" type="rvizUI.py" output="screen"/>
     <node name="a_star_server" pkg="tsane_mmlamare_mwpiazza_final" type="aStarServer.py" output="screen"/>
     <node name="turtlebot_apo" pkg="tsane_mmlamare_mwpiazza_final" type="turtlebot.py" output="screen"/>
+    <!--<param name="/slam_gmapping/angularUpdate" value=".1"/>
+    <param name="/slam_gmapping/delta" value="1"/>
+    <param name="/slam_gmapping/minimumScore" value="10000"/>-->
+
 </launch>

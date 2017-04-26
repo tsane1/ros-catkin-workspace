@@ -25,12 +25,12 @@ from tsane_mmlamare_mwpiazza_final.srv import *
 
 #REPLAN_RATE = 2 # seconds
 ODOM_RATE = .1 # seconds
-REPLAN_INTERVAL = 10           # seconds
-GOAL_TOLERANCE = .5            # meters
+REPLAN_INTERVAL = 1000           # seconds
+GOAL_TOLERANCE = .1            # meters
 ROTATE_TOLERANCE = .1          # radians
 STRAIGHT_SPEED = .15           # m/sec
 STRAIGHT_BUFFER = .05          # number of cms to stop early
-ROTATE_SPEED = .5              # rad/sec
+ROTATE_SPEED = .3              # rad/sec
 USE_COSTMAP = False
 
 """
@@ -44,8 +44,8 @@ class Turtlebot():
         rospy.init_node('turtlebot_apo')
 
         # constants
-        self.spinWheelsInterval = .01 # seconds
-        self.replanInterval = 60      # seconds
+        self.spinWheelsInterval = .01               # seconds
+        self.replanInterval = REPLAN_INTERVAL      # seconds
         self.frameID = String()
         self.frameID.data = "map"
 
@@ -53,6 +53,7 @@ class Turtlebot():
         self.mapIsSet = False
         self.costMapIsSet = False
         self.startIsSet = False
+        self.frontierExplored = False
         self.lastNavTime = rospy.Time.now()
         self.pose = Pose()
         self.map = OccupancyGrid()
@@ -93,30 +94,38 @@ class Turtlebot():
     Read the robot's current position
     """
     def monitorOdometry(self, event):    
-        self.odometry.waitForTransform("odom", "base_footprint", rospy.Time(0), rospy.Duration(1.0))
-        (pos, quaternion) = self.odometry.lookupTransform("odom", "base_footprint", rospy.Time(0))         
-        self.pose.position = Point(pos[0], pos[1], pos[2])        
-        orientation = Quaternion(quaternion[0], quaternion[1], quaternion[2], quaternion[3])        
-        self.pose.orientation.z = tf.transformations.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
-        self.publishPosition()
-        self.startIsSet = True    
+        try:
+            self.odometry.waitForTransform("odom", "base_footprint", rospy.Time(0), rospy.Duration(1.0))
+            (pos, quaternion) = self.odometry.lookupTransform("odom", "base_footprint", rospy.Time(0))         
+            self.pose.position = Point(pos[0], pos[1], pos[2])        
+            orientation = Quaternion(quaternion[0], quaternion[1], quaternion[2], quaternion[3])        
+            self.pose.orientation.z = tf.transformations.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
+            self.publishPosition()
+            self.startIsSet = True 
+        except:
+            print("TURTLEBOT: ODOM Failed")
+            self.startIsSet = False           
 
     """
     navigate along a path of waypoints to the set end goal pose
     """
     def navigate(self):   
-        #self.scanSurroundings() TODO   
-        while True: 
+        self.scanSurroundings()
+        while not self.frontierExplored: 
             if self.startIsSet and self.mapIsSet and (self.costMapIsSet or not USE_COSTMAP):                
                 self.scanSurroundings()
                 path = self.callAStar()            
-                if path == []:
-                    print("TURTLEBOT: Goal Reached")
-                    continue 
+                
+                if self.frontierExplored: # if you think you're done, turn around 3 times and replan
+                    for _ in range(3):
+                        self.scanSurroundings()
+                    path = self.callAStar()
+
                 self.lastNavTime = rospy.Time.now()
                 for pose in path: 
                     self.navToPose(pose)
                 print("TURTLEBOT: navigation iteration complete. replanning")
+        print("\n\nRBE 3002 FINAL PROJECT COMPLETE\nFRONTIER FULLY EXPLORED!\n\nTime for an APO fellowship.\n\n")
 
     """
     Asks the AStarService for a new plan    
@@ -130,6 +139,7 @@ class Turtlebot():
             if (len(response.waypoints.poses) > 0):
                 self.publishGoal(response.waypoints.poses[-1].pose.position) 
             
+            self.frontierExplored = response.frontierExplored
             path = []             
             for poseStamped in response.waypoints.poses: 
                 path.append(poseStamped.pose) 
@@ -151,9 +161,8 @@ class Turtlebot():
         dist = math.hypot(xDiff, yDiff)         
         # execute move       
         if dist > GOAL_TOLERANCE:
-            print("TURTLEBOT: Naving to pose")
             self.rotateTo(preturnAngle)     # rotate towards goal
-            self.driveStraightBy(dist)  # move to goal
+            self.driveStraightBy(dist)      # move to goal
             self.rotateTo(finalAngle)       # rotate towards final orientation 
         else:
             print("TURTLEBOT: Waypoint within goal tolerance")         
