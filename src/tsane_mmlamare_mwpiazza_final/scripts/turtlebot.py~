@@ -20,6 +20,7 @@ from tf.transformations import euler_from_quaternion
 from tsane_mmlamare_mwpiazza_final.srv import *
 
 # Constants
+<<<<<<< HEAD
 ODOM_RATE = .1 # seconds
 REPLAN_INTERVAL = 1000           # seconds
 GOAL_TOLERANCE = .02            # meters
@@ -27,6 +28,15 @@ ROTATE_TOLERANCE = .1          # radians
 STRAIGHT_SPEED = .15           # m/sec
 STRAIGHT_BUFFER = .05          # number of cms to stop early
 ROTATE_SPEED = .5              # rad/sec
+=======
+ODOM_RATE = .2 # seconds
+REPLAN_INTERVAL = 1000           # seconds
+GOAL_TOLERANCE = .1            # meters
+ROTATE_TOLERANCE = .1          # radians
+STRAIGHT_SPEED = .15           # m/sec
+STRAIGHT_BUFFER = .05          # number of cms to stop early
+ROTATE_SPEED = 0.8             # rad/sec
+>>>>>>> 131725cde286409fc41080da1a497ee6fb9d54e3
 USE_COSTMAP = False
 
 """
@@ -59,7 +69,12 @@ class Turtlebot():
         self.driver = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=10)
         self.pubWaypoints = rospy.Publisher('/waypoints', Path, queue_size=10)
         self.pubPos = rospy.Publisher('/currentPos', PointStamped, queue_size=10)
+<<<<<<< HEAD
         self.pubEnd = rospy.Publisher('/endPoint', PointStamped, queue_size=10)  
+=======
+        self.pubEnd = rospy.Publisher('/endPoint', PointStamped, queue_size=10)
+        rospy.sleep(rospy.Duration(0.5)) # pause to allow connections  
+>>>>>>> 131725cde286409fc41080da1a497ee6fb9d54e3
         
         # Subscribers            
         self.subMap = rospy.Subscriber("/expanded", OccupancyGrid, self.saveMap, queue_size=1)
@@ -98,8 +113,13 @@ class Turtlebot():
             self.pose.orientation.z = tf.transformations.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
             self.publishPosition()
             self.startIsSet = True 
+<<<<<<< HEAD
         except:
             print("TURTLEBOT: ODOM Failed")
+=======
+        except Exception as e:
+            print("TURTLEBOT: ODOM Failed", e)
+>>>>>>> 131725cde286409fc41080da1a497ee6fb9d54e3
             self.startIsSet = False           
 
     """
@@ -111,9 +131,16 @@ class Turtlebot():
                 self.scanSurroundings()
                 path = self.callAStar()            
                 
+<<<<<<< HEAD
                 if self.frontierExplored: # double check map
                     print('\n\nTURTLEBOT: I think I\'m done, verifying...\n\n')
                     for _ in range(2):
+=======
+                if self.frontierExplored: # if you think you're done, turn around 3 times and replan
+                    print('TURTLEBOT: I think I\'m done! Verifying...')
+
+                    for _ in range(3):
+>>>>>>> 131725cde286409fc41080da1a497ee6fb9d54e3
                         self.scanSurroundings()
                     path = self.callAStar()
 
@@ -159,14 +186,23 @@ class Turtlebot():
         if dist > GOAL_TOLERANCE:
             self.rotateTo(preturnAngle)     # rotate towards goal
             self.driveStraightBy(dist)      # move to goal
+<<<<<<< HEAD
         else:
             print("TURTLEBOT: Waypoint within goal tolerance")         
+=======
+            self.rotateTo(finalAngle)       # rotate towards final orientation 
+            print('--')
+        else:
+            print("TURTLEBOT: Waypoint within goal tolerance")
+            print('--')      
+>>>>>>> 131725cde286409fc41080da1a497ee6fb9d54e3
 
     """
     drive to a goal subscribed as /move_base_simple/navPose
     """
     def scanSurroundings(self):
         print("TURTLEBOT: Scanning surroundings")
+<<<<<<< HEAD
         self.rotateTo(0)     
         rospy.sleep(1)
         self.rotateTo(math.pi*2/3)     
@@ -174,6 +210,25 @@ class Turtlebot():
         self.rotateTo(-math.pi*2/3)
         rospy.sleep(1)
         self.rotateTo(0)
+=======
+        self.replanInterval = 1000
+        self.lastNavTime = rospy.Time.now()        
+        self.rotateTo(0)     
+        print('TURTLEBOT: at 0')
+        rospy.sleep(.5)
+        self.lastNavTime = rospy.Time.now()        
+        self.rotateTo(math.pi*2/3)     
+        print('TURTLEBOT: at 2pi/3')
+        rospy.sleep(.5)
+        self.lastNavTime = rospy.Time.now()        
+        self.rotateTo(-math.pi*2/3)
+        print('TURTLEBOT: at -2pi/3')
+        rospy.sleep(.5)
+        self.lastNavTime = rospy.Time.now()        
+        self.rotateTo(0)
+        print('TURTLEBOT: at 0')
+        self.replanInterval = REPLAN_INTERVAL
+>>>>>>> 131725cde286409fc41080da1a497ee6fb9d54e3
         print("TURTLEBOT: Finished scanning surroundings")
 
     """
@@ -184,16 +239,23 @@ class Turtlebot():
     Accepts an orientation angle and makes the robot rotate to it.
     """
     def rotateTo(self, angle):
+<<<<<<< HEAD
         if (angle <= math.pi and angle >= -math.pi): # if angle in valid bounds
             nearAngle = False
             deltaAngle = self.pose.orientation.z - angle 
             deltaAngle = deltaAngle + 2*math.pi if (deltaAngle < -math.pi) else deltaAngle
             deltaAngle = deltaAngle - 2*math.pi if (deltaAngle > math.pi) else deltaAngle
             #print(angle, self.pose.orientation.z, deltaAngle)
+=======
+        print('TURTLEBOT: turning to ', angle)
+        if (angle <= math.pi and angle >= -math.pi): # if angle in valid bounds
+            nearAngle = False; p = 1; needToTurn = abs(self.pose.orientation.z - angle)
+>>>>>>> 131725cde286409fc41080da1a497ee6fb9d54e3
             while not nearAngle:
                 deltaAngle = self.pose.orientation.z - angle 
                 deltaAngle = deltaAngle + 2*math.pi if (deltaAngle < -math.pi) else deltaAngle
                 deltaAngle = deltaAngle - 2*math.pi if (deltaAngle > math.pi) else deltaAngle 
+<<<<<<< HEAD
                 speed = ROTATE_SPEED if deltaAngle < 0 else -ROTATE_SPEED
                 self.publishTwist(0, speed) 
                   
@@ -203,6 +265,18 @@ class Turtlebot():
             #print("Finished rotating. Now at:", self.pose.orientation.z)
             self.publishTwist(0, 0)     
             
+=======
+                speed = (p * ROTATE_SPEED) + 0.5 if deltaAngle < 0 else -(p * ROTATE_SPEED) - 0.5   # shifted p-only control
+                self.publishTwist(0, speed)
+                  
+                difference = abs(self.pose.orientation.z - angle)
+                nearAngle = difference < ROTATE_TOLERANCE
+
+                if not nearAngle:
+                     p = (difference / needToTurn) if (needToTurn > ROTATE_TOLERANCE) else 0
+
+            self.publishTwist(0, 0)     
+>>>>>>> 131725cde286409fc41080da1a497ee6fb9d54e3
         else:
             print("TURTLEBOT: Angle not within PI to negative PI bounds")
 
@@ -210,9 +284,16 @@ class Turtlebot():
     Accepts a speed and a distance for the robot to move in a straight line
     """
     def driveStraightBy(self, distance):   
+<<<<<<< HEAD
         overDistance = False  
         originalPos = self.pose.position # copy origin
         while not overDistance:
+=======
+        print('TURTLEBOT: traveling ', distance)
+        overDistance = False  
+        originalPos = self.pose.position # copy origin
+        while not self.hasIntervalPassed(self.lastNavTime, self.replanInterval) and not overDistance:
+>>>>>>> 131725cde286409fc41080da1a497ee6fb9d54e3
             self.publishTwist(STRAIGHT_SPEED, 0)
               
             # check for replanning timeout and driving past distance
@@ -221,8 +302,13 @@ class Turtlebot():
             distanceTraveled = math.hypot(xDistance, yDistance)
             overDistance = distanceTraveled > (distance - STRAIGHT_BUFFER)
         self.publishTwist(0, 0)     
+<<<<<<< HEAD
         #if self.hasIntervalPassed(self.lastNavTime, self.replanInterval):
         #    print("TURTLEBOT: Rotation replanning timeout")     
+=======
+        if self.hasIntervalPassed(self.lastNavTime, self.replanInterval):
+            print("TURTLEBOT: Rotation replanning timeout")     
+>>>>>>> 131725cde286409fc41080da1a497ee6fb9d54e3
 
     """
     Returns whether the given number of seconds have passed
@@ -244,7 +330,11 @@ class Turtlebot():
         twist.linear.x = linear
         twist.angular.z = angular
         self.driver.publish(twist)
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 131725cde286409fc41080da1a497ee6fb9d54e3
     """
     A helper for publishing PoseStamped messages
     """
@@ -254,9 +344,16 @@ class Turtlebot():
         point.header.stamp = rospy.Time.now()
         point.header.frame_id = self.frameID.data
         point.point.x = self.pose.position.x
+<<<<<<< HEAD
         point.point.y = self.pose.position.y        
         self.pubPos.publish(point)
 
+=======
+        point.point.y = self.pose.position.y      
+        self.pubPos.publish(point)
+
+
+>>>>>>> 131725cde286409fc41080da1a497ee6fb9d54e3
     """
     A helper for publishing PoseStamped messages
     """
@@ -267,7 +364,12 @@ class Turtlebot():
         point.header.frame_id = self.frameID.data
         point.point.x = position.x
         point.point.y = position.y        
+<<<<<<< HEAD
         self.pubEnd.publish(point)                
+=======
+        self.pubEnd.publish(point)
+                    
+>>>>>>> 131725cde286409fc41080da1a497ee6fb9d54e3
 
 # The program's primary executing section
 if __name__ == '__main__':    
