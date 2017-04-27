@@ -8,11 +8,7 @@ Author:
     - Matthew Lamare
     - Matthew Piazza
 
-Since:
-    - 4/8/2017
-
-Version:
-    - 1.0 Initial commit
+Updated: 4/26/17
 """
 
 # Imports
@@ -23,14 +19,14 @@ from geometry_msgs.msg import Twist, Pose, Point, PointStamped, PoseStamped, Qua
 from tf.transformations import euler_from_quaternion
 from tsane_mmlamare_mwpiazza_final.srv import *
 
-#REPLAN_RATE = 2 # seconds
-ODOM_RATE = .1 # seconds
+# Constants
+ODOM_RATE = .2 # seconds
 REPLAN_INTERVAL = 1000           # seconds
 GOAL_TOLERANCE = .1            # meters
 ROTATE_TOLERANCE = .1          # radians
 STRAIGHT_SPEED = .15           # m/sec
 STRAIGHT_BUFFER = .05          # number of cms to stop early
-ROTATE_SPEED = .3              # rad/sec
+ROTATE_SPEED = .4              # rad/sec
 USE_COSTMAP = False
 
 """
@@ -43,7 +39,7 @@ class Turtlebot():
     def __init__(self):
         rospy.init_node('turtlebot_apo')
 
-        # constants
+        # Constants
         self.spinWheelsInterval = .01               # seconds
         self.replanInterval = REPLAN_INTERVAL      # seconds
         self.frameID = String()
@@ -109,8 +105,7 @@ class Turtlebot():
     """
     navigate along a path of waypoints to the set end goal pose
     """
-    def navigate(self):   
-        self.scanSurroundings()
+    def navigate(self):           
         while not self.frontierExplored: 
             if self.startIsSet and self.mapIsSet and (self.costMapIsSet or not USE_COSTMAP):                
                 self.scanSurroundings()
@@ -197,20 +192,24 @@ class Turtlebot():
     def rotateTo(self, angle):
         if (angle <= math.pi and angle >= -math.pi): # if angle in valid bounds
             nearAngle = False  
-            while not self.hasIntervalPassed(self.lastNavTime, self.replanInterval) and not nearAngle:
-                # find necessary change in angle to turn by
-                deltaAngle = self.pose.orientation.z - angle 
-                deltaAngle = deltaAngle + 2*math.pi if (deltaAngle < -math.pi) else deltaAngle
-                deltaAngle = deltaAngle - 2*math.pi if (deltaAngle > math.pi) else deltaAngle 
-                speed = ROTATE_SPEED if deltaAngle < 0 else -ROTATE_SPEED       
-                self.publishTwist(0, speed)
+            lastCmdUpdateTime = rospy.Time.now() 
+            #while not self.hasIntervalPassed(self.lastNavTime, self.replanInterval) and not nearAngle:
+            while not nearAngle:
+                # find necessary change in angle to turn by                       
+                if self.hasIntervalPassed(lastCmdUpdateTime, .3):
+                    deltaAngle = self.pose.orientation.z - angle 
+                    deltaAngle = deltaAngle + 2*math.pi if (deltaAngle < -math.pi) else deltaAngle
+                    deltaAngle = deltaAngle - 2*math.pi if (deltaAngle > math.pi) else deltaAngle 
+                    speed = ROTATE_SPEED if deltaAngle < 0 else -ROTATE_SPEED
+                    self.publishTwist(0, speed)
+                    lastCmdUpdateTime = rospy.Time.now() 
                   
                 # check for replanning timeout and finishing single rotation        
                 difference = abs(self.pose.orientation.z - angle)
                 nearAngle = difference < ROTATE_TOLERANCE       
             self.publishTwist(0, 0)     
-            if self.hasIntervalPassed(self.lastNavTime, self.replanInterval):
-                print("TURTLEBOT: Rotation replanning timeout")    
+            #if self.hasIntervalPassed(self.lastNavTime, self.replanInterval):
+            #    print("TURTLEBOT: Rotation replanning timeout")    
 
         else: # angle not valid
             print("TURTLEBOT: Angle not within PI to negative PI bounds")

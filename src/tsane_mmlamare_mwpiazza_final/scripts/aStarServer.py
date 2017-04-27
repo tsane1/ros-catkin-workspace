@@ -8,19 +8,23 @@ Author:
     - Matthew Lamare
     - Matthew Piazza
 
-Date: 4/10/17
+Updated: 4/26/17
 """
 
+# Imports
 import math
 import rospy, tf
 from nav_msgs.msg import GridCells, Path
 from geometry_msgs.msg import Point, PoseStamped, Pose
 from tsane_mmlamare_mwpiazza_final.srv import *
 
+# Constants
 Z_AXIS = (0, 0, 1)
-TOLERANCE = .1 # meters
+TOLERANCE = .1     # meters
 
-# A* Map Point 
+"""
+A* Map Point 
+"""
 class StarNode():
     def __init__(self, x, y, isWall, isUnknown, row, col, heuristicCost):
         self.x = x
@@ -38,9 +42,13 @@ class StarNode():
     def __repr__(self):
         return str(self.x) + ',' + str(self.y) + (': WALL' if self.isWall else ': NOT WALL') + '\n'   
 
-# ROS node 
+"""
+ROS node for computing A* during frontier exploration
+"""
 class AStarServiceServer():
-    # set up server  
+    """
+    sets up server  
+    """
     def __init__(self):                
         rospy.init_node('a_star_server_apo')
         s = rospy.Service('a_star', AStar, self.handleAStar)
@@ -48,7 +56,7 @@ class AStarServiceServer():
         rospy.spin()                    
 
     """
-    run A* algorithm and return fields
+    runs A* algorithm, returning waypoints of path to destination
     """
     def handleAStar(self, msg):
         waypointArray = []
@@ -67,6 +75,9 @@ class AStarServiceServer():
         waypoints = self.calculateWaypoints(waypointArray)        
         return AStarResponse(waypoints, frontierExplored)
 
+    """ 
+    determines destination to explore frontier or exit from wall
+    """
     def decideGoal(self, startPosn):
         startNode = self.getNodeFromXY(startPosn.x, startPosn.y)      
         decider = lambda neighbor: (not (neighbor.isWall or neighbor.isUnknown) and self.distance(neighbor, startNode) > TOLERANCE + (4 * self.resolution)) if startNode.isWall else (neighbor.isUnknown)
@@ -93,13 +104,17 @@ class AStarServiceServer():
             print('A* SERVER: goal:', goalPose.position.x, goalPose.position.y)
         return goalPose # might be none if caught with no frontier
 
-    # estimates distance between two nodes
+    """
+    estimates distance between two nodes
+    """
     def distance(self, currentPoint, goalPoint):     
         diffX = abs(currentPoint.x - goalPoint.x)
         diffY = abs(currentPoint.y - goalPoint.y)                
         return math.hypot(diffX, diffY) 
 
-    # convert occupancy grid from RViz to 2D matrix map of StarNodes
+    """
+    converts occupancy grid from RViz to 2D matrix map of StarNodes
+    """
     def readOccupancyGridMaps(self, wallMap, costMap):        
         mapRows = wallMap.info.height
         mapColumns = wallMap.info.width
@@ -122,7 +137,9 @@ class AStarServiceServer():
                 cost = grid[row][col][1]
                 self.starMap[row][col] = StarNode(x, y, isWall, isUnknown, row, col, cost)
 
-    # calculates best path between the set start and end nodes
+    """
+    calculates optimal path between the set start and end nodes
+    """
     def aStar(self, startX, startY, goalX, goalY):
         startNode = self.getNodeFromXY(startX, startY)
         goalNode = self.getNodeFromXY(goalX, goalY)        
@@ -172,7 +189,9 @@ class AStarServiceServer():
         print("A* Server: Could not find a path :( ")
         return []
 
-     # finds center of grid cell containing coordinate
+    """
+    finds the A* map node corresponding to given coordinate
+    """
     def getNodeFromXY(self, x, y):
         for row in range(len(self.starMap)):
             for col in range(len(self.starMap[row])):
@@ -184,7 +203,9 @@ class AStarServiceServer():
         print("A* Server: No grid cell found containing given point")
         return None  
 
-    # estimates distance between two nodes
+    """
+    estimates the distance aka cost between two nodes
+    """
     def heuristic(self, currentNode, goalNode):        
         diffX = abs(currentNode.x - goalNode.x)
         diffY = abs(currentNode.y - goalNode.y)        
@@ -194,7 +215,9 @@ class AStarServiceServer():
             costFactor = 999999
         return distance*costFactor
 
-    # gets the node with the smallest known cost, assuming self.frontierNodes is not empty
+    """
+    gets the node with the smallest known cost, assuming self.frontierNodes is not empty
+    """
     def getMinimumNode(self, startIsWall):        
         minNode = self.frontierNodes[0]
         if startIsWall:
@@ -206,7 +229,9 @@ class AStarServiceServer():
                 minNode = node 
         return minNode
 
-    # gets this node's neighbors in the A* map if they exist
+    """
+    gets the given node's neighbors in the A* map if they exist
+    """
     def getNeighbors(self, node):
         row = node.row
         col = node.col
@@ -236,7 +261,9 @@ class AStarServiceServer():
             neighbors.append(self.starMap[row+1][col+1])   
         return [node for node in neighbors if node != None] # remove uninitialized nodes
 
-    # create array of nodes in path in reverse from goal to start
+    """
+    creates array of adjacent steps in path working backwards from the goal to start point
+    """
     def buildPath(self, previousStepTo, endNode):
         path = []
         while endNode in previousStepTo: 
@@ -245,7 +272,9 @@ class AStarServiceServer():
         path.insert(0, endNode) # ensure the start node is included on the path for display purposes
         return path
 
-    # creates orientation and position directions to follow to execute the given path
+    """
+    simplifies the given path to its turning points
+    """
     def calculateWaypoints(self, path): 
         waypoints = Path()
         waypoints.header.seq = 1
@@ -266,7 +295,9 @@ class AStarServiceServer():
             print("A* Server: Got a path, here ya go!")
         return waypoints
 
-    # create PoseStamped message given x, y, and radian orientation
+    """
+    creates PoseStamped message given x, y, and radian orientation
+    """
     def createPoseStamped(self, x, y, radians):   
         pose = PoseStamped()
         pose.header.seq = 1
@@ -282,7 +313,9 @@ class AStarServiceServer():
         pose.pose.orientation.w = quaternionArray[3]
         return pose
 
-     # convert array of StarNodes to grid cells
+    """
+    convert array of StarNodes to grid cells
+    """
     def createGridCellsFromArray(self, nodeArray):        
         grid = GridCells()
         grid.header.seq = 1

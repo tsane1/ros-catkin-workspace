@@ -8,11 +8,11 @@ Authors:
     - Matthew Piazza
     - Tanuj Sane
 
-Updated: 4/11/17
+Updated: 4/26/17
 """
 
+# Imports
 from nav_msgs.msg import OccupancyGrid
-
 
 """
 pads the obstacles in an occupancy grid with more obstacles cells up to a given depth in meters
