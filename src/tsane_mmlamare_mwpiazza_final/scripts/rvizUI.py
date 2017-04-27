@@ -19,7 +19,7 @@ from geometry_msgs.msg import PoseStamped, PointStamped
 import padding
 
 # Constants
-PADDING = .2 # meters
+PADDING = .4 # meters
 
 """
 ROS node for updating RViz UI

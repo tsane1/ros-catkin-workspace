@@ -1,0 +1,2 @@
+tsane_mmlamare_lab3:tsane_mmlamare_mwpiazza_final:tsane_mmlamare_mwpiazza_lab4
+-DCATKIN_DEVEL_PREFIX=/home/mwpiazza/Ros_ws/devel -DCMAKE_INSTALL_PREFIX=/home/mwpiazza/Ros_ws/install -G Unix Makefiles

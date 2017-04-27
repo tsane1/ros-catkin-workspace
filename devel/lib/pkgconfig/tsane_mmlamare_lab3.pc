@@ -1,0 +1,8 @@
+prefix=/home/mwpiazza/Ros_ws/devel
+
+Name: tsane_mmlamare_lab3
+Description: Description of tsane_mmlamare_lab3
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/mwpiazza/Ros_ws/devel/lib 
+Requires: 
